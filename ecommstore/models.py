@@ -10,6 +10,8 @@ class Product(models.Model):
     image = models.ImageField(upload_to = 'static', blank=True, null=True)
     price = models.DecimalField(max_digits=12,decimal_places=2)
     stock = models.IntegerField()
+    specification = models.TextField()
+    termsnconditions = models.TextField()
     created_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
