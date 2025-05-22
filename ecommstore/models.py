@@ -10,9 +10,13 @@ class Product(models.Model):
     image = models.ImageField(upload_to = 'static', blank=True, null=True)
     price = models.DecimalField(max_digits=12,decimal_places=2)
     stock = models.IntegerField()
-    specification = models.TextField(null=True)
-    termsnconditions = models.TextField(null=True)
+    specification = models.JSONField(null=True)
+    termsnconditions = models.JSONField(null=True)
     created_date = models.DateTimeField(auto_now_add=True)
+    desc1 = models.TextField(null=True)
+    image1 = models.ImageField(upload_to = 'static', blank=True, null=True)
+    image2 = models.ImageField(upload_to = 'static', blank=True, null=True)
+    image3 = models.ImageField(upload_to = 'static', blank=True, null=True)
 
     def __str__(self):
         return self.name

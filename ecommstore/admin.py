@@ -5,6 +5,7 @@ from .models import Product, Order, OrderItem, Customer
 admin.site.register(OrderItem)
 admin.site.register(Customer)
 
+
 class ProductAdmin(admin.ModelAdmin):
     list_display = ["product_code","name","description","price","stock","created_date","image"]
 

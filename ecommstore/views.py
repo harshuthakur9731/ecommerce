@@ -31,13 +31,20 @@ def signup(request):
 def itemdetail(request,PCode):
     product = Product.objects.filter(product_code=PCode).values()
     print(product)
+ 
     params = {
         "product_code":product[0]["product_code"],
         "name":product[0]["name"],
         "image":product[0]["image"],
         "description":product[0]["description"],
         "price":product[0]["price"],
-        "instock":product[0]["stock"]
-    }
+        "instock":product[0]["stock"],
+        "specifications":product[0]["specification"],
+        "termsnconditions":product[0]["termsnconditions"],
+        "desc1":product[0]["desc1"],
+        "image1":product[0]["image1"],
+        "image2":product[0]["image2"],
+        "image3":product[0]["image3"],
+    }   
 
     return render(request,'ecommstore/templates/itemdetail.html',params)

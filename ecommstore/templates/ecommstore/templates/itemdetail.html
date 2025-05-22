@@ -88,15 +88,16 @@
         }
         .specifications h2 {
             font-size: 1.8rem;
-            border-bottom: 3px solid #007BFF;
+            border-bottom: 2px solid #00060c;
             padding-bottom: 0.4rem;
             margin-bottom: 1rem;
-            color: #007BFF;
+            color: #00060c;
         }
         table.spec-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 1rem;
+            font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
         }
         table.spec-table th, table.spec-table td {
             padding: 0.75rem 1rem;
@@ -121,6 +122,7 @@
                 flex: 1 1 100%;
             }
         }
+
     </style>
 </head>
 <body>
@@ -141,13 +143,31 @@
                 <button class="add-cart-button">ADD TO CART</button>
             </div>
         </section>
-
-        {% if item.specifications %}
+        
+        {% if specifications %}
             <section class="specifications" aria-label="Item specifications">
                 <h2>Specifications</h2>
                 <table class="spec-table">
                     <tbody>
-                    {% for key, value in item.specifications.items %}
+                    {% for key, value in specifications.items %}
+                        <tr>
+                            <th>{{ key }}</th>
+                            <td>{{ value }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+        {% else %}
+            <p><em>No specifications available.</em></p>
+        {% endif %}
+
+        {% if termsnconditions %}
+            <section class="specifications" aria-label="Terms and conditions">
+                <h2>Terms and conditions</h2>
+                <table class="spec-table">
+                    <tbody>
+                    {% for key, value in termsnconditions.items %}
                         <tr>
                             <th>{{ key }}</th>
                             <td>{{ value }}</td>
