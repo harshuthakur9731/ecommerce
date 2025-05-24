@@ -11,9 +11,9 @@ def login(request):
 def home(request):
     products = Product.objects.all()
     images = [
-        '/static/youtuber.png',
+        '/static/fashion11.png',
         '/static/fashiongirl.png',
-        '/static/fashion7.png'
+        '/static/fashion10.png'
     ]
     return render(request,'ecommstore/templates/base.html',{'products': products,'images': images})
 
@@ -21,7 +21,7 @@ def shop(request):
     return render(request,'ecommstore/templates/base.html')
 
 def cart(request):
-    return render(request,'ecommstore/templates/base.html')
+    return render(request,'ecommstore/templates/cartdetail.html')
 
 def account(request):
     return render(request,'ecommstore/templates/base.html')

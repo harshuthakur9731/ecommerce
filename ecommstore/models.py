@@ -21,6 +21,13 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+class ProductVariant(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    variant_name = models.CharField(max_length=255)
+
+    def __str__ (self):
+        return self.variant_name
+
 class Order(models.Model):
     order_id = models.CharField(max_length=12,primary_key=True)
     user = models.ForeignKey(User,on_delete=models.CASCADE)
@@ -37,6 +44,20 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f'{self.quantity} of {self.product.name}'
+
+class CartItem(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    variant = models.ForeignKey(ProductVariant, on_delete=models.SET_NULL, null=True, blank=True)
+    quantity = models.PositiveIntegerField(default=1)
+    added_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'product', 'variant')  # Prevent duplicate items in cart
+
+    def __str__(self):
+        return f"{self.quantity}x {self.product.name} for {self.user.username}"
 
 class Customer(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE)
