@@ -5,15 +5,15 @@ from django.contrib.auth.decorators import login_required
 # Create your views here.
 
 def login(request):
-    print('HarshDev')
+    print('main')
     print('Testing Branch')
-    pass
-
+    return render(request,'ecommstore/templates/base.html',{'products': products,'images': images})
+    
 @login_required(login_url='admin/login/?next=/admin/')
 def home(request):
     products = Product.objects.all()
     images = [
-        '/static/fashion11.png',
+        '/static/fashion21.png',
         '/static/fashiongirl.png',
         '/static/fashion10.png'
     ]
