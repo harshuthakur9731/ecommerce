@@ -5,8 +5,6 @@ from django.contrib.auth.decorators import login_required
 # Create your views here.
 
 def login(request):
-    print('HarshDev')
-    print('Testing Branch')
     pass
 
 @login_required(login_url='admin/login/?next=/admin/')
