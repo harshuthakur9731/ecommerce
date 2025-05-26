@@ -5,9 +5,7 @@ from django.contrib.auth.decorators import login_required
 # Create your views here.
 
 def login(request):
-    print('main')
-    print('Testing Branch')
-    return render(request,'ecommstore/templates/base.html',{'products': products,'images': images})
+    pass
     
 @login_required(login_url='admin/login/?next=/admin/')
 def home(request):
