@@ -1,11 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Shopping Cart - Your Cart Details</title>
-    <style>
-        /* Reset and basic styles */
+{% extends 'base.html' %}
+{% csrf_token %}
+{% block title %}Shopping Cart - Your Cart Details{% endblock %}
+{% block css %}
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f5f7fa;
@@ -124,9 +120,8 @@
             display: table;
             clear: both;
         }
-    </style>
-</head>
-<body>
+{% endblock %}
+{% block body %}
     <div class="container">
         <h1>Your Shopping Cart</h1>
         {% if cart_items %}
@@ -177,5 +172,4 @@
         <p class="empty-cart">Your cart is empty.</p>
         {% endif %}
     </div>
-</body>
-</html>
+{% endblock %}
