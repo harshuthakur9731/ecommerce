@@ -6,6 +6,7 @@
     <title>{% block title %}My eCommerce Site{% endblock %}</title>
     <style>
         {% block css %}
+        
         {% endblock %}
         /* Reset & Base Styles */
         * {
@@ -216,11 +217,14 @@
                 <!-- Example Product Card -->
                 {% for i in products %}
                 {% if forloop.counter0|divisibleby:1 %}
-                    <div class="product-card">                
-                        <a href="itemdetail/{{i.product_code}}"><img src="{{i.image}}" alt="Product Name" class="product-image" /></a>
-                        <h2 class="product-title">{{i.name}}</h2>
-                        <p class="product-price">{{i.price}} Rs.</p>
-                        <button class="btn-add-cart">Add to Cart</button>
+                    <div class="product-card">  
+                        <form method="post" action="addToCartAct/{{i.product_code}}">
+                            {% csrf_token %}                  
+                            <a href="itemdetail/{{i.product_code}}"><img src="{{i.image}}" alt="Product Name" class="product-image" /></a>
+                            <h2 class="product-title">{{i.name}}</h2>
+                            <p class="product-price">{{i.price}} Rs.</p>
+                            <button class="btn-add-cart">Add to Cart</button>
+                        </form>
                     </div>        
                             <!-- {% if forloop.counter0|divisibleby:4 and forloop.counter0 != 0 %}
                                 <br>

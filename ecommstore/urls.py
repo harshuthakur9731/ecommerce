@@ -7,6 +7,7 @@ urlpatterns = [
     path('home',views.home,name="home"),
     path('shop',views.home,name="shop"),
     path('cart',views.cart,name="cart"),
+    path('addToCartAct/<slug:PCode>',views.addToCartAct,name="addToCartAct"),
     path('account',views.home,name="account"),
     path('admin/logout',views.logout,name="logout"),
     path('home',views.home,name="login"),

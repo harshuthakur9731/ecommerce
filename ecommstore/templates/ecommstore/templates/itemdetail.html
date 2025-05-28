@@ -137,10 +137,12 @@
                 {% endif %}
             </div>
             <div class="item-info">
+                <form method="post" action="addToCartAct/{{product_code}}">
                 <h1 class="item-name">{{ name }}</h1>
                 <p class="item-description">{{ description }}</p>
                 <p class="item-price">${{ price }}</p>
                 <button class="add-cart-button">ADD TO CART</button>
+                </form>
             </div>
         </section>
         

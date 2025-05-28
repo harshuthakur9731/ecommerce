@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Product
+from .models import Product,CartItem
 from django.contrib.auth.decorators import login_required
 
 # Create your views here.
@@ -48,7 +48,22 @@ def itemdetail(request,PCode):
         "desc1":product[0]["desc1"],
         "image1":product[0]["image1"],
         "image2":product[0]["image2"],
-        "image3":product[0]["image3"],
+        "image3":product[0]["image3"],  
     }   
     return render(request,'ecommstore/templates/itemdetail.html',params)
+
+def addToCartAct(request,PCode):
+    print("Hello World!",PCode)
+    productInstance = Product.objects.filter(product_code=PCode)
+    fetchedCartItem = CartItem.objects.filter(user=request.user,product=productInstance[0])
+    if(len(fetchedCartItem)>0):
+        print("Step 1")
+        fetchedCartItem[0].quantity= fetchedCartItem[0].quantity + 1
+        fetchedCartItem[0].save()
+    else:
+        print("Step 2")
+        cartProduct = CartItem(user=request.user,product=productInstance[0])
+        cartProduct.save()
+    
+    return render(request,'ecommstore/templates/cartdetail.html')
 
