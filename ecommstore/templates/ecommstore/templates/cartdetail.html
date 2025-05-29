@@ -126,12 +126,12 @@
         <h1>Your Shopping Cart</h1>
         {% if cart_items %}
         <div class="clearfix">
-            <form method="POST" action="{% url 'reset_cart' %}" style="display:inline-block;">
+            <form method="POST" action=" " style="display:inline-block;">
                 {% csrf_token %}
                 <button type="submit" class="reset-cart-btn">Reset Cart</button>
             </form>
         </div>
-        <form method="POST" action="{% url 'proceed_to_payment' %}">
+        <form method="POST" action="">
             {% csrf_token %}
             <table>
                 <thead>
@@ -144,16 +144,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for item in cart_items %}
+                    {% for key, value in cart_items %}
                     <tr>
-                        <td>{{ item.name }}</td>
-                        <td class="variant">{{ item.variant }}</td>
-                        <td class="quantity">{{ item.quantity }}</td>
-                        <td class="price">${{ item.price|floatformat:2 }}</td>
+                        <td>{{ value.product }}</td>
+                        <td class="variant">{{ value.variant }}</td>
+                        <td class="quantity">{{ value.quantity }}</td>
+                        <td class="price">{{ value.price|floatformat:2 }} Rs.</td>
                         <td>
-                            <form method="POST" action="{% url 'remove_from_cart' %}">
+                            <form method="POST" action="delToCartAct/{{value.id}}">
                                 {% csrf_token %}
-                                <input type="hidden" name="item_id" value="{{ item.id }}" />
+                                <input type="hidden" name="item_id" value="{{ value.id }}" />{{ value.id }}
                                 <button type="submit" class="remove-btn">Remove</button>
                             </form>
                         </td>
@@ -161,7 +161,7 @@
                     {% endfor %}
                     <tr class="total-row">
                         <td colspan="3">Total</td>
-                        <td class="price">${{ total_price|floatformat:2 }}</td>
+                        <td class="price">Rs. {{ total_price|floatformat:2 }}</td>
                         <td></td>
                     </tr>
                 </tbody>

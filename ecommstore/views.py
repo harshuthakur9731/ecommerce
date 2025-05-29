@@ -58,12 +58,39 @@ def addToCartAct(request,PCode):
     fetchedCartItem = CartItem.objects.filter(user=request.user,product=productInstance[0])
     if(len(fetchedCartItem)>0):
         print("Step 1")
+        #item is already into the cart
         fetchedCartItem[0].quantity= fetchedCartItem[0].quantity + 1
+        fetchedCartItem[0].price = productInstance[0].price
         fetchedCartItem[0].save()
     else:
+        #new item added to the cart
         print("Step 2")
-        cartProduct = CartItem(user=request.user,product=productInstance[0])
+        cartProduct = CartItem(user=request.user,product=productInstance[0],price=productInstance[0].price)
         cartProduct.save()
-    
-    return render(request,'ecommstore/templates/cartdetail.html')
+
+    cart_items = {}
+    i=0
+    final_cart_items = CartItem.objects.filter(user=request.user)
+    cartlength = len(final_cart_items)
+
+    for i in range(0,cartlength):
+        cart_items[i] = final_cart_items[i]
+
+    print(cart_items)
+    return render(request,'ecommstore/templates/cartdetail.html',{'cart_items':cart_items.items()})
+
+def delToCartAct(request,itemid):
+    fetchedCartItem = CartItem.objects.filter(user=request.user,id=itemid)
+    print('CartItem to delete',fetchedCartItem)
+    fetchedCartItem.delete()
+    cart_items = {}
+    i=0
+    final_cart_items = CartItem.objects.filter(user=request.user)
+    cartlength = len(final_cart_items)
+
+    for i in range(0,cartlength):
+        cart_items[i] = final_cart_items[i]
+
+    print(cart_items)
+    return render(request,'ecommstore/templates/cartdetail.html',{'cart_items':cart_items.items()})
 
