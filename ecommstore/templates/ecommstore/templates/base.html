@@ -216,7 +216,7 @@
             <div class="products">
                 <!-- Example Product Card -->
                 {% for i in products %}
-                {% if forloop.counter0|divisibleby:1 %}
+                <!-- {% if forloop.counter0|divisibleby:1 %} -->
                     <div class="product-card">  
                         <form method="post" action="addToCartAct/{{i.product_code}}">
                             {% csrf_token %}                  
@@ -229,7 +229,7 @@
                             <!-- {% if forloop.counter0|divisibleby:4 and forloop.counter0 != 0 %}
                                 <br>
                             {% endif %} -->
-                {% endif %}
+                <!-- {% endif %} -->
                 {% endfor %}
                 <!-- More products can be iterated here -->
             </div>

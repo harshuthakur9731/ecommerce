@@ -137,7 +137,7 @@
                 {% endif %}
             </div>
             <div class="item-info">
-                <form method="post" action="addToCartAct/{{product_code}}">
+                <form method="post" action="{% url 'addToCartAct' product_code %}">
                 {% csrf_token %}
                 <h1 class="item-name">{{ name }}</h1>
                 <p class="item-description">{{ description }}</p>

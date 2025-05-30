@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 # Create your views here.
 
     
-@login_required(login_url='admin/login/?next=/home/')
+@login_required()
 def home(request):
     products = Product.objects.all()
     images = [
@@ -17,9 +17,6 @@ def home(request):
 
 def shop(request):
     return render(request,'ecommstore/templates/base.html')
-
-def cart(request):
-    return render(request,'ecommstore/templates/cartdetail.html')
 
 def account(request):
     return render(request,'ecommstore/templates/base.html')
@@ -51,6 +48,24 @@ def itemdetail(request,PCode):
         "image3":product[0]["image3"],  
     }   
     return render(request,'ecommstore/templates/itemdetail.html',params)
+
+def cart(request):
+    cart_items = {}
+    i=0
+    final_cart_items = CartItem.objects.filter(user=request.user)
+    cartlength = len(final_cart_items)
+
+    for i in range(0,cartlength):
+        cart_items[i] = final_cart_items[i]
+
+    print(cart_items)
+    return render(request,'ecommstore/templates/cartdetail.html',{'cart_items':cart_items.items()})
+
+def resetcart(request):
+    cartItemsTodel = CartItem.objects.filter(user=request.user)
+    print('CartItem to delete for reset',cartItemsTodel)
+    cartItemsTodel.delete()
+    return render(request,'ecommstore/templates/cartdetail.html')
 
 def addToCartAct(request,PCode):
     print("Hello World!",PCode)

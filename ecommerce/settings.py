@@ -123,6 +123,12 @@ STATICFILES_DIRS = [
     # "/var/www/static/",
 ]
 
+# Redirect after login
+LOGIN_REDIRECT_URL = '/home/'
+
+# Redirect if user is not authenticated
+LOGIN_URL = '/login/'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 

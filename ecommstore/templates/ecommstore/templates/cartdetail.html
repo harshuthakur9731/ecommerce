@@ -126,46 +126,47 @@
         <h1>Your Shopping Cart</h1>
         {% if cart_items %}
         <div class="clearfix">
-            <form method="POST" action=" " style="display:inline-block;">
+            <form method="POST" action="{% url 'resetCart' %}" style="display:inline-block;">
                 {% csrf_token %}
                 <button type="submit" class="reset-cart-btn">Reset Cart</button>
             </form>
         </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th class="variant">Variant</th>
+                    <th class="quantity">Quantity</th>
+                    <th class="price">Price</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for key, value in cart_items %}
+                <tr>
+                    <td>{{ value.product }}</td>
+                    <td class="variant">{{ value.variant }}</td>
+                    <td class="quantity">{{ value.quantity }}</td>
+                    <td class="price">{{ value.price|floatformat:2 }} Rs.</td>
+                    <td>
+                        <form method="POST" action="{% url 'delToCartAct' value.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="item_id" value="{{ value.id }}" />{{ value.id }}
+                            <button type="submit" class="remove-btn">Remove</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr class="total-row">
+                    <td colspan="3">Total</td>
+                    <td class="price">Rs. {{ total_price|floatformat:2 }}</td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
         <form method="POST" action="">
             {% csrf_token %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>Item</th>
-                        <th class="variant">Variant</th>
-                        <th class="quantity">Quantity</th>
-                        <th class="price">Price</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for key, value in cart_items %}
-                    <tr>
-                        <td>{{ value.product }}</td>
-                        <td class="variant">{{ value.variant }}</td>
-                        <td class="quantity">{{ value.quantity }}</td>
-                        <td class="price">{{ value.price|floatformat:2 }} Rs.</td>
-                        <td>
-                            <form method="POST" action="delToCartAct/{{value.id}}">
-                                {% csrf_token %}
-                                <input type="hidden" name="item_id" value="{{ value.id }}" />{{ value.id }}
-                                <button type="submit" class="remove-btn">Remove</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    <tr class="total-row">
-                        <td colspan="3">Total</td>
-                        <td class="price">Rs. {{ total_price|floatformat:2 }}</td>
-                        <td></td>
-                    </tr>
-                </tbody>
-            </table>
             <button type="submit" class="buy-now-btn">Buy Now</button>
         </form>
         {% else %}
