@@ -4,13 +4,11 @@ from django.contrib.auth import views as auth_views
 from . import views
 
 urlpatterns = [
-    path('admin', admin.site.urls),
-
     # Custom login and logout
-    path('login/', auth_views.LoginView.as_view(template_name='login.html', redirect_authenticated_user=True), name='login'),
+    path('', auth_views.LoginView.as_view(template_name='login.html', redirect_authenticated_user=True, next_page='/home'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
 
-    path('',views.home,name="login"),
+   # path('',views.home,name="login"),
     path('home',views.home,name="home"),
     path('shop',views.home,name="shop"),
     path('cart',views.cart,name="cart"),

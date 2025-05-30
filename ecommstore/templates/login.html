@@ -21,7 +21,7 @@
             </div>
 
             <div class="login">
-                <form action='login_act' method="post">
+                <form method="post">
                     {% csrf_token %}
                     <label for="chk" aria-hidden="true">Login</label>
                     <input type="text" name="usrname" placeholder="Username" required="">
