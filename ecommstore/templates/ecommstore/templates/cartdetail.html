@@ -15,7 +15,7 @@
             padding: 1rem 2rem 2rem 2rem;
             background: #fff;
             border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
         }
         h1 {
             text-align: center;
@@ -152,10 +152,24 @@
                     <td>
                         <form method="POST" action="{% url 'delToCartAct' value.id %}">
                             {% csrf_token %}
-                            <input type="hidden" name="item_id" value="{{ value.id }}" />{{ value.id }}
+                            <input type="hidden" name="item_id" value="{{ value.id }}" />
                             <button type="submit" class="remove-btn">Remove</button>
                         </form>
                     </td>
+                    <!-- <td>
+                        <form method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="item_id" value="{{ value.id }}" />
+                            <button type="submit" class="plus-qty">+</button>
+                        </form>
+                    </td>
+                    <td>
+                        <form method="POST" >
+                            {% csrf_token %}
+                            <input type="hidden" name="item_id" value="{{ value.id }}" />
+                            <button type="submit" class="minus-qty">-</button>
+                        </form>
+                    </td> -->
                 </tr>
                 {% endfor %}
                 <tr class="total-row">
@@ -170,7 +184,8 @@
             <button type="submit" class="buy-now-btn">Buy Now</button>
         </form>
         {% else %}
-        <p class="empty-cart">Your cart is empty.</p>
+        <p class="empty-cart">Your cart is empty!<br>Please Add Item to your cart.
+        </p>
         {% endif %}
     </div>
 {% endblock %}

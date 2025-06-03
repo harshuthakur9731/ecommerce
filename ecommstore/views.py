@@ -4,7 +4,6 @@ from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 
-    
 @login_required
 def home(request):
     products = Product.objects.all()
@@ -45,7 +44,8 @@ def itemdetail(request,PCode):
         "desc1":product[0]["desc1"],
         "image1":product[0]["image1"],
         "image2":product[0]["image2"],
-        "image3":product[0]["image3"],  
+        "image3":product[0]["image3"],
+        "images":[product[0]["image"],product[0]["image1"],product[0]["image2"],product[0]["image3"]]  
     }   
     return render(request,'ecommstore/templates/itemdetail.html',params)
 

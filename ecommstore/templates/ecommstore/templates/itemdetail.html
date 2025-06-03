@@ -1,137 +1,165 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Item Details</title>
-    <style>
-        /* Reset and base */
-        * {
-            box-sizing: border-box;
-        }
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f4f6f8;
-            color: #333;
-        }
-        .container {
-            max-width: 900px;
-            margin: 2rem auto;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-            padding: 2rem;
-        }
-        .item-header {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 2rem;
-            align-items: center;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        .item-image {
-            flex: 1 1 250px;
-            max-width: 300px;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        .item-image img {
-            width: 100%;
-            height: auto;
-            display: block;
-            object-fit: cover;
-        }
-        .item-info {
-            flex: 2 1 400px;
-        }
-        .item-name {
-            font-size: 2.4rem;
-            font-weight: 700;
-            margin: 0 0 0.5rem 0;
-            color: #222;
-        }
-        .item-description {
-            font-size: 1.1rem;
-            color: #555;
-            line-height: 1.5;
-        }
-        .item-price {
-            margin-top: 1rem;
-            font-size: 1.6rem;
-            font-weight: 600;
-            color: #007BFF;
-        }
-        .add-cart-button {
-        background-color: #4CAF50; /* Green */
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 16px;
-        transition: background-color 0.3s ease;
+{% extends 'base.html' %}
+{% csrf_token %}
+{% block title %}Item Details{% endblock %}
+{% block css %}
+/* Reset and base */
+* {
+    box-sizing: border-box;
+}
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #e8f8fd;
+    color: #333;
+}
+.container {
+    max-width: 900px;
+    margin: 2rem auto;
+    background: #fff;
+    <!-- background-color: #eff8f8; -->
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    padding: 2rem;
+}
+.item-header {
+    background-color:#d3ebec;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 1.5rem;
+    margin-bottom: 2rem;
+}
+.item-image {
+    <!-- background-color: white; -->
+    
+    margin-top: 15px;
+    <!-- margin-bottom: 15px; -->
+    flex: 1 1 250px;
+    max-width: 300px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.item-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+}
+.item-info {
+    flex: 2 1 400px;
+}
+.item-name {
+    font-size: 2.4rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: #222;
+}
+.item-description {
+    font-size: 1.1rem;
+    color: #555;
+    line-height: 1.5;
+}
+.item-price {
+    margin-top: 1rem;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #007BFF;
+}
+.add-cart-button {
+background-color: #4CAF50; /* Green */
+color: white;
+padding: 10px 20px;
+border: none;
+border-radius: 5px;
+cursor: pointer;
+font-size: 16px;
+transition: background-color 0.3s ease;
+}
+
+.add-cart-button:hover {
+    background-color: #45a049; /* Darker green on hover */
+}
+
+.add-cart-button:active {
+    background-color: #3e8e41; /* Even darker when clicked */
+}
+.specifications {
+    margin-top: 2rem;
+}
+.specifications h2 {
+    font-size: 1.8rem;
+    border-bottom: 2px solid #00060c;
+    padding-bottom: 0.4rem;
+    margin-bottom: 1rem;
+    color: #00060c;
+}
+table.spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1rem;
+    font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+}
+table.spec-table th, table.spec-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+}
+table.spec-table th {
+    background: #f0f8ff;
+    color: #0056b3;
+    width: 35%;
+    font-weight: 600;
+}
+@media (max-width: 600px) {
+    .item-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .item-image {
+        max-width: 100%;
+    }
+    .item-info {
+        flex: 1 1 100%;
+    }
+}
+#carouselExample{
+            height: 350px;
+            background-color: white;
+            margin-top: 15px;
+            margin-bottom: 15px;
         }
 
-        .add-cart-button:hover {
-            background-color: #45a049; /* Darker green on hover */
-        }
+{% endblock %}
 
-        .add-cart-button:active {
-            background-color: #3e8e41; /* Even darker when clicked */
-        }
-        .specifications {
-            margin-top: 2rem;
-        }
-        .specifications h2 {
-            font-size: 1.8rem;
-            border-bottom: 2px solid #00060c;
-            padding-bottom: 0.4rem;
-            margin-bottom: 1rem;
-            color: #00060c;
-        }
-        table.spec-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 1rem;
-            font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-        }
-        table.spec-table th, table.spec-table td {
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid #ddd;
-            text-align: left;
-        }
-        table.spec-table th {
-            background: #f0f8ff;
-            color: #0056b3;
-            width: 35%;
-            font-weight: 600;
-        }
-        @media (max-width: 600px) {
-            .item-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .item-image {
-                max-width: 100%;
-            }
-            .item-info {
-                flex: 1 1 100%;
-            }
-        }
-
-    </style>
-</head>
-<body>
+{% block body %}
     
     <div class="container" role="main">
         <section class="item-header" aria-label="Item overview">
-            <div class="item-image">
-                {% if name %}
-                    <img src="/{{image}}/" alt="Image of {{ name }}" />
+            <div class="item-image">         
+                <!-- <section class="carousel" style="margin-bottom:40px;"> -->
+                    <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        {% for image in images %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <img src="/{{image}}/" class="d-block w-100" alt="Slide {{ forloop.counter }}">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                    </div>
+                <!-- </section> -->
+                <!-- {% if name %}
+                    <img src="/{{image}}/" alt="Image of {{ name }}" /> -->
                 {% else %}
                     <img src="https://via.placeholder.com/300x300?text=No+Image" alt="No image available" />
                 {% endif %}
@@ -180,9 +208,7 @@
                 </table>
             </section>
         {% else %}
-            <p><em>No specifications available.</em></p>
+            <p><em>No terms and conditions available.</em></p>
         {% endif %}
     </div>
-</body>
-</html>
-
+{% endblock %}
