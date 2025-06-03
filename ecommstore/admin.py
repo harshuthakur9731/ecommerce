@@ -1,9 +1,9 @@
 from django.contrib import admin
-from .models import Product, ProductVariant, Order, OrderItem, CartItem, Customer
+from .models import Product, ProductVariant, Order, OrderItem, CartItem, UserProfile
 
 # Register your models here.
 admin.site.register(OrderItem)
-admin.site.register(Customer)
+admin.site.register(UserProfile)
 admin.site.register(ProductVariant)
 
 class ProductAdmin(admin.ModelAdmin):

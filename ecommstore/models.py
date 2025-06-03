@@ -60,10 +60,12 @@ class CartItem(models.Model):
     def __str__(self):
         return f"{self.quantity}x {self.product.name} for {self.user.username}"
 
-class Customer(models.Model):
+class UserProfile(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE)
     address = models.TextField()
+    profile_picture = models.ImageField(upload_to='static', blank=True, null=True)
 
     def __str__(self):
         return self.user.username
+
 

@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Product,CartItem
+from .models import Product,CartItem,UserProfile
 from django.contrib.auth.decorators import login_required
 
 # Create your views here.
@@ -7,12 +7,16 @@ from django.contrib.auth.decorators import login_required
 @login_required
 def home(request):
     products = Product.objects.all()
+    userprofile = UserProfile.objects.filter(user=request.user)
+    profilepicture = ''
+    if len(userprofile) > 0:
+        profilepicture = userprofile[0].profile_picture
     images = [
         '/static/fashion25.png',
         '/static/fashiongirl.png',       
-        '/static/fashion10.png'
+        '/static/fashion10.png',
     ]
-    return render(request,'ecommstore/templates/base.html',{'products': products,'images': images})
+    return render(request,'ecommstore/templates/base.html',{'products': products,'images': images,'profilepicture':profilepicture})
 
 def shop(request):
     return render(request,'ecommstore/templates/base.html')
