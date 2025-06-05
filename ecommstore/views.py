@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from .models import Product,CartItem,UserProfile
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 
 # Create your views here.
 
@@ -17,6 +18,21 @@ def home(request):
         '/static/fashion10.png',
     ]
     return render(request,'ecommstore/templates/base.html',{'products': products,'images': images,'profilepicture':profilepicture})
+
+def signup(request):
+    Name = request.POST.get(name)
+    Email = request.POST.get(email)
+    Pswd = request.POST.get(pswd)
+    print('Hello')
+    print('Name,Email,Pswd',Name+Email+Pswd)
+    existingUsers = User.objects.filter(username=Name)
+    if len(existingUsers)==0:
+        user = User.objects.create_user(username=Name,password=Pswd,email=Email)
+        user.save()
+        return redirect('login')
+    else:
+        print('username already exists!')    
+    return redirect('login')
 
 def shop(request):
     return render(request,'ecommstore/templates/base.html')
@@ -53,6 +69,7 @@ def itemdetail(request,PCode):
     }   
     return render(request,'ecommstore/templates/itemdetail.html',params)
 
+@login_required
 def cart(request):
     cart_items = {}
     i=0
