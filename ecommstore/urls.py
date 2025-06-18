@@ -18,6 +18,6 @@ urlpatterns = [
     path('delToCartAct/<slug:itemid>',views.delToCartAct,name="delToCartAct"),
     path('account',views.home,name="account"),
 
-    path('signup',views.home,name="signup"),
+    #path('signup',views.home,name="signup"),
     path('itemdetail/<slug:PCode>',views.itemdetail,name="itemdetail"),
 ]

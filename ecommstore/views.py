@@ -1,7 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from .models import Product,CartItem,UserProfile
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib import messages
 
 # Create your views here.
 
@@ -20,17 +21,19 @@ def home(request):
     return render(request,'ecommstore/templates/base.html',{'products': products,'images': images,'profilepicture':profilepicture})
 
 def signup(request):
-    Name = request.POST.get(name)
-    Email = request.POST.get(email)
-    Pswd = request.POST.get(pswd)
+    Name = request.POST.get("name")
+    Email = request.POST.get("email")
+    Pswd = request.POST.get("pswd")
     print('Hello')
     print('Name,Email,Pswd',Name+Email+Pswd)
     existingUsers = User.objects.filter(username=Name)
     if len(existingUsers)==0:
         user = User.objects.create_user(username=Name,password=Pswd,email=Email)
         user.save()
+        messages.success(request,'Your Account has been created successfully!')
         return redirect('login')
     else:
+        messages.success(request,'username already exists!')
         print('username already exists!')    
     return redirect('login')
 
@@ -46,7 +49,7 @@ def logout(request):
 def login(request):
     return render(request,'ecommstore/templates/base.html')
 
-def signup(request):
+#def signup(request):
     return render(request,'ecommstore/templates/base.html')
 
 def itemdetail(request,PCode):
