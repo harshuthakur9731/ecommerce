@@ -168,8 +168,8 @@
                 border-radius: 50%;
                 cursor:pointer;
                 transition: 0.3s;
-                width: 35px;       /* Width of the circle */
-                height: 35px; 
+                width: 40px;       /* Width of the circle */
+                height: 40px; 
                       }
               .openbtn:hover{
                              background-color:#c2dbff 
@@ -208,7 +208,7 @@
                 {% if user.is_authenticated %}
                     <li><a href="{% url 'account' %}">My Account</a></li>
                     <li><a href="{% url 'logout' %}">Logout</a></li>
-                    <li><button class="openbtn" onclick="openNav()"><img id="pic" src="{{profilepicture}}"/></button></li>  
+                    <li><button class="openbtn" onclick="openNav()"><img id="pic" src="{{profilepicture}}" style="width: 35px; height: 35px;"/></button></li>  
                 {% else %}
                     <li><a href="{% url 'login' %}">Login</a></li>
                     <li><a href="{% url 'signup' %}">Sign Up</a></li>

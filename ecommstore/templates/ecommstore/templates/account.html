@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% csrf_token %}
+{% block title %}Account{% endblock %}
+{% block css %}
+body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .profile-container {
+            display: flex;
+            height: 80vh;
+        }
+
+        .left-panel {
+            width: 40%;
+            background-color: #f4f4f4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-image {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid #ccc;
+        }
+
+        .right-panel {
+            width: 60%;
+            padding: 40px;
+            background-color: #fff;
+        }
+
+        .user-details h2 {
+            margin-bottom: 20px;
+        }
+
+        .user-details p {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+
+        .label {
+            font-weight: bold;
+        }
+        .inputfields{
+            text-align: center;
+            width: 250px;
+        }
+        .button{
+            background-color: #04AA6D;
+            color: white;
+            border: solid black 2px;
+            padding: 2px 10px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+            border-radius: 6px;
+            box-shadow: 0 5px #666;
+        }
+        .button:hover {background-color: #3e8e41}
+        .button:active {
+            background-color: #3e8e41;           
+            transform: translateY(2px);
+        }
+{% endblock %}
+{% block body %}
+<div class="profile-container">
+    <div class="left-panel">
+        <input type="image" src="{% if profilepicture %}{{ profilepicture }}{% else %}/static/default-profile.png{% endif %}" alt="Profile Picture" class="profile-image">
+    </div>
+    <div class="right-panel">
+        <div class="user-details">
+            <form action="">
+                <h2>Account Details</h2>
+                <p><span class="label">Username:</span> <input type="text" id="Username" name="Username" value="{{ user.username }}" class="inputfields" style="margin-left: 150px;" readonly></p>
+                <p><span class="label">Email:</span> <input type="email" id="Email" name="Email" value="{{ user.email }}" class="inputfields" style="margin-left: 189px;"></p>
+                <p><span class="label">First name:</span> <input type="text" id="FirstName" name="FirstName" value="{{ user.first_name }}" class="inputfields" style="margin-left: 146px;"></p>
+                <p><span class="label">Last name:</span> <input type="text" id="LastName" name="LastName" value="{{ user.last_name }}" class="inputfields" style="margin-left: 150px;"></p>
+                <p><span class="label">Last login:</span> <input type="datetime" id="LastLogin" name="LastLogin" value="{{ user.last_login }}" class="inputfields" style="margin-left: 154px;" readonly></p>
+                <p><span class="label">Date joined:</span> <input type="datetime" id="DateJoined" name="DateJoined" value="{{ user.date_joined }}" class="inputfields" style="margin-left: 138px;" readonly></p>
+                <p><span class="label">Is Active:</span> <input type="boolean" id="IsActive" name="IsActive" value="{{ user.is_active }}" class="inputfields" style="margin-left: 164px;" readonly></p>  
+                <p><span class="label">Profile Pic:</span> <input type="file" id="profilepic" name="profilepic" value="{{ profilepicture }}" class="inputfields" style="margin-left: 150px;"></p>            
+                <button class="button">SAVE</button>
+            </form>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}

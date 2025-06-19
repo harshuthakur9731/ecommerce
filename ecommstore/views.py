@@ -41,7 +41,11 @@ def shop(request):
     return render(request,'ecommstore/templates/base.html')
 
 def account(request):
-    return render(request,'ecommstore/templates/base.html')
+    userprofile = UserProfile.objects.filter(user=request.user)
+    profilepicture = ''
+    if len(userprofile) > 0:
+        profilepicture = userprofile[0].profile_picture
+    return render(request,'ecommstore/templates/account.html',{'profilepicture':profilepicture})
 
 def logout(request):
     return render(request,'ecommstore/templates/base.html')
@@ -75,6 +79,10 @@ def itemdetail(request,PCode):
 @login_required
 def cart(request):
     cart_items = {}
+    userprofile = UserProfile.objects.filter(user=request.user)
+    profilepicture = ''
+    if len(userprofile) > 0:
+        profilepicture = userprofile[0].profile_picture
     i=0
     final_cart_items = CartItem.objects.filter(user=request.user)
     cartlength = len(final_cart_items)
@@ -83,7 +91,7 @@ def cart(request):
         cart_items[i] = final_cart_items[i]
 
     print(cart_items)
-    return render(request,'ecommstore/templates/cartdetail.html',{'cart_items':cart_items.items()})
+    return render(request,'ecommstore/templates/cartdetail.html',{'cart_items':cart_items.items(),'profilepicture':profilepicture})
 
 def resetcart(request):
     cartItemsTodel = CartItem.objects.filter(user=request.user)
@@ -132,4 +140,5 @@ def delToCartAct(request,itemid):
 
     print(cart_items)
     return render(request,'ecommstore/templates/cartdetail.html',{'cart_items':cart_items.items()})
+
 
