@@ -45,7 +45,8 @@ def account(request):
     profilepicture = ''
     if len(userprofile) > 0:
         profilepicture = userprofile[0].profile_picture
-    return render(request,'ecommstore/templates/account.html',{'profilepicture':profilepicture})
+        address = userprofile[0].address
+    return render(request,'ecommstore/templates/account.html',{'profilepicture':profilepicture,'address':address})
 
 def logout(request):
     return render(request,'ecommstore/templates/base.html')
