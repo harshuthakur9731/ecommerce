@@ -17,7 +17,6 @@ urlpatterns = [
     path('addToCartAct/<slug:PCode>',views.addToCartAct,name="addToCartAct"),
     path('delToCartAct/<slug:itemid>',views.delToCartAct,name="delToCartAct"),
     path('account',views.account,name="account"),
-
-    #path('signup',views.home,name="signup"),
     path('itemdetail/<slug:PCode>',views.itemdetail,name="itemdetail"),
+    path('order',views.order,name="order"),
 ]

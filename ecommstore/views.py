@@ -1,5 +1,5 @@
-from django.shortcuts import render,redirect
-from .models import Product,CartItem,UserProfile
+from django.shortcuts import render,redirect,HttpResponse
+from .models import Product,CartItem,UserProfile,Order,OrderItem
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -43,6 +43,7 @@ def shop(request):
 def account(request):
     userprofile = UserProfile.objects.filter(user=request.user)
     profilepicture = ''
+    address = ''
     if len(userprofile) > 0:
         profilepicture = userprofile[0].profile_picture
         address = userprofile[0].address
@@ -59,7 +60,11 @@ def login(request):
 
 def itemdetail(request,PCode):
     product = Product.objects.filter(product_code=PCode).values()
-    print(product) 
+    userprofile = UserProfile.objects.filter(user=request.user)
+    profilepicture = ''
+    if len(userprofile) > 0:
+        print('profilepicture found!')
+        profilepicture = userprofile[0].profile_picture 
     params = {
         "product_code":product[0]["product_code"],
         "name":product[0]["name"],
@@ -73,7 +78,8 @@ def itemdetail(request,PCode):
         "image1":product[0]["image1"],
         "image2":product[0]["image2"],
         "image3":product[0]["image3"],
-        "images":[product[0]["image"],product[0]["image1"],product[0]["image2"],product[0]["image3"]]  
+        "images":[product[0]["image"],product[0]["image1"],product[0]["image2"],product[0]["image3"]],
+        "profilepicture":profilepicture  
     }   
     return render(request,'ecommstore/templates/itemdetail.html',params)
 
@@ -87,12 +93,13 @@ def cart(request):
     i=0
     final_cart_items = CartItem.objects.filter(user=request.user)
     cartlength = len(final_cart_items)
-
+    total_amount = 0
     for i in range(0,cartlength):
         cart_items[i] = final_cart_items[i]
+        total_amount = final_cart_items[i].amount+total_amount
 
     print(cart_items)
-    return render(request,'ecommstore/templates/cartdetail.html',{'cart_items':cart_items.items(),'profilepicture':profilepicture})
+    return render(request,'ecommstore/templates/cartdetail.html',{'cart_items':cart_items.items(),'profilepicture':profilepicture,'total_amount':total_amount})
 
 def resetcart(request):
     cartItemsTodel = CartItem.objects.filter(user=request.user)
@@ -101,9 +108,8 @@ def resetcart(request):
     return render(request,'ecommstore/templates/cartdetail.html')
 
 def addToCartAct(request,PCode):
-    print("Hello World!",PCode)
     productInstance = Product.objects.filter(product_code=PCode)
-    fetchedCartItem = CartItem.objects.filter(user=request.user,product=productInstance[0])
+    fetchedCartItem = CartItem.objects.filter(user=request.user,product=productInstance[0]) 
     if(len(fetchedCartItem)>0):
         print("Step 1")
         #item is already into the cart
@@ -120,12 +126,20 @@ def addToCartAct(request,PCode):
     i=0
     final_cart_items = CartItem.objects.filter(user=request.user)
     cartlength = len(final_cart_items)
-
+    userprofile = UserProfile.objects.filter(user=request.user)
+    profilepicture = ''
+    if len(userprofile) > 0:
+        print('profilepicture found!')
+        profilepicture = userprofile[0].profile_picture
+    else:
+        print("profilepicture not found!")
+    total_amount=0
     for i in range(0,cartlength):
         cart_items[i] = final_cart_items[i]
+        total_amount = final_cart_items[i].amount+total_amount
 
     print(cart_items)
-    return render(request,'ecommstore/templates/cartdetail.html',{'cart_items':cart_items.items()})
+    return render(request,'ecommstore/templates/cartdetail.html',{'cart_items':cart_items.items(),'profilepicture':profilepicture,'total_amount':total_amount})
 
 def delToCartAct(request,itemid):
     fetchedCartItem = CartItem.objects.filter(user=request.user,id=itemid)
@@ -135,11 +149,47 @@ def delToCartAct(request,itemid):
     i=0
     final_cart_items = CartItem.objects.filter(user=request.user)
     cartlength = len(final_cart_items)
-
+    total_amount=0
     for i in range(0,cartlength):
         cart_items[i] = final_cart_items[i]
+        total_amount = final_cart_items[i].amount+total_amount
 
     print(cart_items)
-    return render(request,'ecommstore/templates/cartdetail.html',{'cart_items':cart_items.items()})
+    return render(request,'ecommstore/templates/cartdetail.html',{'cart_items':cart_items.items(),'total_amount':total_amount})
 
+def order(request):
+    userCartItems = CartItem.objects.filter(user=request.user)  
+    allorders = Order.objects.filter()
+    neworderid = ''
+    if(len(allorders)>0):
+        neworderid = 'ODR'+str(len(allorders)+1)
+    else:
+        neworderid = 'ODR'+str(1)
+    #creating new order
+    order = Order(order_id=neworderid,user=request.user,status='created')
+    order.save()
+    #creating order line
+    for i in range(0,len(userCartItems)):
+        orderlineitem = OrderItem(
+                                order=order,
+                                product=userCartItems[i].product,
+                                quantity=userCartItems[i].quantity,
+                                unitprice=userCartItems[i].price,
+                                amount=userCartItems[i].price*userCartItems[i].quantity
+                            )
+        orderlineitem.save()
+
+    orderitems = OrderItem.objects.filter(order_id=order.order_id)
+    orderamount = 0
+    for j in range(0,len(orderitems)):
+        orderamount=orderamount+orderitems[j].amount
+    
+    for orderitem in Order.objects.filter(order_id=order.order_id):
+        orderitem.amount = orderamount
+        orderitem.save()
+
+    userCartItems.delete()
+    
+    return HttpResponse("OrderCreated")
+    
 

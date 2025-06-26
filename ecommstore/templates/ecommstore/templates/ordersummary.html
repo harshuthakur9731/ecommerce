@@ -56,7 +56,7 @@
             font-size: 1.2rem;
             font-weight: 700;
             border-top: 2px solid #007bff;
-            color: black;
+            color: #007bff;
         }
         .buy-now-btn {
             display: block;
@@ -124,14 +124,14 @@
 {% endblock %}
 {% block body %}
     <div class="container">
-        <h1>Your Shopping Cart</h1>
+        <h1>Your Order Summary</h1>
         {% if cart_items %}
-        <div class="clearfix">
+        <!-- <div class="clearfix">
             <form method="POST" action="{% url 'resetCart' %}" style="display:inline-block;">
                 {% csrf_token %}
                 <button type="submit" class="reset-cart-btn">Reset Cart</button>
             </form>
-        </div>
+        </div> -->
         
         <table>
             <thead>
@@ -148,7 +148,7 @@
                 <tr>
                     <td>{{ value.product }}</td>
                     <td class="variant">{{ value.variant }}</td>
-                    <td class="quantity" contenteditable="true">{{ value.quantity }}</td>
+                    <td class="quantity">{{ value.quantity }}</td>
                     <td class="price">{{ value.price|floatformat:2 }} Rs.</td>
                     <td>
                         <form method="POST" action="{% url 'delToCartAct' value.id %}">
@@ -175,7 +175,7 @@
                 {% endfor %}
                 <tr class="total-row">
                     <td colspan="3">Total</td>
-                    <td class="price">Rs. {{ total_amount|floatformat:2 }}</td>
+                    <td class="price">Rs. {{ total_price|floatformat:2 }}</td>
                     <td></td>
                 </tr>
             </tbody>
