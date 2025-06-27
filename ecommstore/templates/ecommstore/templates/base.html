@@ -251,7 +251,7 @@
                 {% for i in products %}
                 <!-- {% if forloop.counter0|divisibleby:1 %} -->
                     <div class="product-card">  
-                        <form method="post" action="addToCartAct/{{i.product_code}}">
+                        <form method="post" action="{% url 'addToCartAct' i.product_code %}">
                             {% csrf_token %}                  
                             <a href="itemdetail/{{i.product_code}}"><img src="{{i.image}}" alt="Product Name" class="product-image" /></a>
                             <h2 class="product-title">{{i.name}}</h2>

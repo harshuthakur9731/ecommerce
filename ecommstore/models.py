@@ -30,7 +30,7 @@ class ProductVariant(models.Model):
 
 class Order(models.Model):
     status_choices = [
-        ('created','created'),('placed','placed'),('shipped','shipped'),('delivered','delivered')
+        ('placed','placed'),('shipped','shipped'),('delivered','delivered')
     ]
     order_id = models.CharField(max_length=12,primary_key=True)
     user = models.ForeignKey(User,on_delete=models.CASCADE)

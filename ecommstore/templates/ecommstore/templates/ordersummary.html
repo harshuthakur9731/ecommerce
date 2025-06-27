@@ -43,6 +43,10 @@
             background: #f1f9ff;
         }
         .price {
+            <!-- text-align: right; -->
+            font-weight: 600;
+        }
+        .amount {
             text-align: right;
             font-weight: 600;
         }
@@ -56,9 +60,9 @@
             font-size: 1.2rem;
             font-weight: 700;
             border-top: 2px solid #007bff;
-            color: #007bff;
+            color: black;
         }
-        .buy-now-btn {
+        .confirm-btn {
             display: block;
             width: 100%;
             text-align: center;
@@ -75,7 +79,7 @@
             user-select: none;
             margin-top: 1rem;
         }
-        .buy-now-btn:hover {
+        .confirm-btn:hover {
             background-color: #218838;
         }
         .remove-btn {
@@ -92,8 +96,8 @@
         .remove-btn:hover {
             background-color: #bb2d3b;
         }
-        .reset-cart-btn {
-            background-color: #ffc107;
+        .cancel-order-btn {
+            background-color: #fa3416;
             color: #212529;
             border: none;
             border-radius: 6px;
@@ -105,8 +109,8 @@
             float: right;
             transition: background-color 0.3s ease;
         }
-        .reset-cart-btn:hover {
-            background-color: #e0a800;
+        .cancel-order-btn:hover {
+            background-color: #e23d24;
         }
         .empty-cart {
             text-align: center;
@@ -125,14 +129,13 @@
 {% block body %}
     <div class="container">
         <h1>Your Order Summary</h1>
-        {% if cart_items %}
-        <!-- <div class="clearfix">
-            <form method="POST" action="{% url 'resetCart' %}" style="display:inline-block;">
+        {% if order_items %}
+        <div class="clearfix">
+            <form style="display:inline-block;">
                 {% csrf_token %}
-                <button type="submit" class="reset-cart-btn">Reset Cart</button>
+                <button type="submit" class="cancel-order-btn">Cancel Order</button>
             </form>
-        </div> -->
-        
+        </div>
         <table>
             <thead>
                 <tr>
@@ -140,52 +143,33 @@
                     <th class="variant">Variant</th>
                     <th class="quantity">Quantity</th>
                     <th class="price">Unit Price</th>
+                    <th class="amount">Amount</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
-                {% for key, value in cart_items %}
+                {% for key, value in order_items %}
                 <tr>
                     <td>{{ value.product }}</td>
                     <td class="variant">{{ value.variant }}</td>
                     <td class="quantity">{{ value.quantity }}</td>
-                    <td class="price">{{ value.price|floatformat:2 }} Rs.</td>
-                    <td>
-                        <form method="POST" action="{% url 'delToCartAct' value.id %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="item_id" value="{{ value.id }}" />
-                            <button type="submit" class="remove-btn">Remove</button>
-                        </form>
-                    </td>
-                    <!-- <td>
-                        <form method="POST">
-                            {% csrf_token %}
-                            <input type="hidden" name="item_id" value="{{ value.id }}" />
-                            <button type="submit" class="plus-qty">+</button>
-                        </form>
-                    </td>
-                    <td>
-                        <form method="POST" >
-                            {% csrf_token %}
-                            <input type="hidden" name="item_id" value="{{ value.id }}" />
-                            <button type="submit" class="minus-qty">-</button>
-                        </form>
-                    </td> -->
+                    <td class="price">{{ value.unitprice|floatformat:2 }} Rs.</td>
+                    <td class="amount">{{ value.amount|floatformat:2 }} Rs.</td>
                 </tr>
                 {% endfor %}
                 <tr class="total-row">
-                    <td colspan="3">Total</td>
-                    <td class="price">Rs. {{ total_price|floatformat:2 }}</td>
+                    <td colspan="4">Total</td>
+                    <td class="amount">Rs. {{ orderamount|floatformat:2 }}</td>
                     <td></td>
                 </tr>
             </tbody>
         </table>
-        <form method="POST" action="{% url 'order' %}">
+        <form >
             {% csrf_token %}
-            <button type="submit" class="buy-now-btn">Buy Now</button>
+            <button type="submit" class="confirm-btn">Confirm/Proceed-PaymentOptions</button>
         </form>
         {% else %}
-        <p class="empty-cart">Your cart is empty!<br>Please Add Item to your cart.
+        <p class="empty-cart">Your Order does not have any items included!<br>Please Add Item to your cart.
         </p>
         {% endif %}
     </div>

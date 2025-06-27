@@ -126,6 +126,8 @@ def addToCartAct(request,PCode):
     i=0
     final_cart_items = CartItem.objects.filter(user=request.user)
     cartlength = len(final_cart_items)
+
+    #accessing the user profile picture
     userprofile = UserProfile.objects.filter(user=request.user)
     profilepicture = ''
     if len(userprofile) > 0:
@@ -133,6 +135,8 @@ def addToCartAct(request,PCode):
         profilepicture = userprofile[0].profile_picture
     else:
         print("profilepicture not found!")
+    
+    #Calculating the total amount of the cart
     total_amount=0
     for i in range(0,cartlength):
         cart_items[i] = final_cart_items[i]
@@ -166,7 +170,7 @@ def order(request):
     else:
         neworderid = 'ODR'+str(1)
     #creating new order
-    order = Order(order_id=neworderid,user=request.user,status='created')
+    order = Order(order_id=neworderid,user=request.user,status='placed')
     order.save()
     #creating order line
     for i in range(0,len(userCartItems)):
@@ -178,18 +182,19 @@ def order(request):
                                 amount=userCartItems[i].price*userCartItems[i].quantity
                             )
         orderlineitem.save()
-
+    order_items = {}
     orderitems = OrderItem.objects.filter(order_id=order.order_id)
     orderamount = 0
     for j in range(0,len(orderitems)):
+        order_items[j] = orderitems[j]
         orderamount=orderamount+orderitems[j].amount
     
     for orderitem in Order.objects.filter(order_id=order.order_id):
         orderitem.amount = orderamount
         orderitem.save()
 
-    userCartItems.delete()
-    
-    return HttpResponse("OrderCreated")
+    userCartItems.delete()   
+    print('order_items',order_items)
+    return render(request,'ecommstore/templates/ordersummary.html',{'order_items':order_items.items(),'orderamount':orderamount})
     
 
