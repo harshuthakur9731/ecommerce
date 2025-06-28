@@ -47,7 +47,12 @@ def account(request):
     if len(userprofile) > 0:
         profilepicture = userprofile[0].profile_picture
         address = userprofile[0].address
-    return render(request,'ecommstore/templates/account.html',{'profilepicture':profilepicture,'address':address})
+
+    myOrders = {}
+    order = Order.objects.filter(user=request.user)
+    for i in range(0,len(order)):
+        myOrders[i] = order[i]
+    return render(request,'ecommstore/templates/account.html',{'profilepicture':profilepicture,'address':address,'myOrders':myOrders.items()})
 
 def logout(request):
     return render(request,'ecommstore/templates/base.html')

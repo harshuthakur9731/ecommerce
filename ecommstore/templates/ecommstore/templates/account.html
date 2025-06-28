@@ -10,7 +10,7 @@
 
         .profile-container {
             display: flex;
-            height: 80vh;
+            height: 100%;
             margin-bottom:10px;
         }
 
@@ -18,8 +18,10 @@
             width: 40%;
             background-color: #f4f4f4;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            padding-left: 13%;
+            padding-top: 10%;
+            <!-- align-items: center; -->
+            <!-- justify-content: center; -->
         }
 
         .profile-image {
@@ -28,10 +30,11 @@
             border-radius: 50%;
             object-fit: cover;
             border: 5px solid #ccc;
+            position:fixed;
         }
 
         .right-panel {
-            width: 60%;
+            width: 60%;        
             padding: 40px;
             background-color: #6095fe ;
         }
@@ -68,6 +71,29 @@
             background-color: #3e8e41;           
             transform: translateY(2px);
         }
+        .YourOrderDetails {
+            background-color: pink;
+            margin-top:30px;
+            padding-left:20px;
+            padding-bottom:20px;
+            padding-top:3px;
+            border: 2px solid black;
+            border-radius: 10px;
+        }
+        table {
+            border:3px solid ;
+            width:97%;
+            text-align: center;
+        }
+        #YourOrders th {
+            border:2px solid;
+            padding:5px;
+        }
+        #YourOrders td {
+            border:2px solid;
+            padding:5px;
+        }
+
 {% endblock %}
 {% block body %}
 <div class="profile-container">
@@ -89,9 +115,27 @@
                 <p><span class="label">Profile Pic:</span> <input type="file" id="profilepic" name="profilepic" value="{{ profilepicture }}" class="inputfields" style="margin-left: 150px;"></p>
                 <button class="button">SAVE</button>          
             </form> 
-            <secton name="OrderDetails">
-                
-            </secton>          
+        </div>
+        <div class="YourOrderDetails">
+            <secton name="YourOrderDetails">
+                <h2 style="margin-top: 15px;">Your Orders:</h2>
+                <table id="YourOrders">                   
+                    <tr>
+                        <th>Order_ID</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Order Date</th>     
+                    </tr>
+                    {% for key,value in myOrders %}
+                    <tr>
+                        <td>{{value.order_id}}</td>
+                        <td>{{value.amount}}</td>
+                        <td>{{value.status}}</td>
+                        <td>{{value.created_date}}</td>
+                    </tr>
+                    {% endfor %}
+                </table>           
+            </secton>
         </div>
     </div>
 </div>
