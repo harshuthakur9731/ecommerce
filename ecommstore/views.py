@@ -175,7 +175,7 @@ def order(request):
     else:
         neworderid = 'ODR'+str(1)
     #creating new order
-    order = Order(order_id=neworderid,user=request.user,status='placed')
+    order = Order(order_id=neworderid,user=request.user,status='created')
     order.save()
     #creating order line
     for i in range(0,len(userCartItems)):
@@ -194,12 +194,29 @@ def order(request):
         order_items[j] = orderitems[j]
         orderamount=orderamount+orderitems[j].amount
     
+    #orderitem is the order
     for orderitem in Order.objects.filter(order_id=order.order_id):
         orderitem.amount = orderamount
         orderitem.save()
 
-    userCartItems.delete()   
+    #userCartItems.delete()
+    for k in range(0,len(userCartItems)):
+        userCartItems[k].related_order = orderitem.order_id
+        userCartItems[k].save()
+
     print('order_items',order_items)
-    return render(request,'ecommstore/templates/ordersummary.html',{'order_items':order_items.items(),'orderamount':orderamount})
+    return render(request,'ecommstore/templates/ordersummary.html',{'order_items':order_items.items(),'orderamount':orderamount,'order':orderitem.order_id})
     
+def confirmorder(request,orderid):
+    order = Order.objects.filter(order_id=orderid)
+    print('Order:',order)
+    for item in order:
+        item.status = 'placed'
+        item.save()
+    # order[0].status='placed'
+    # order[0].save()
+    cartitem = CartItem.objects.filter(related_order=orderid)
+    print('CartItems:',cartitem)
+    cartitem.delete()
+    return HttpResponse('Order placed Successfully!')
 

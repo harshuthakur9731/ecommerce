@@ -30,7 +30,7 @@ class ProductVariant(models.Model):
 
 class Order(models.Model):
     status_choices = [
-        ('placed','placed'),('shipped','shipped'),('delivered','delivered')
+        ('created','created'),('placed','placed'),('shipped','shipped'),('delivered','delivered')
     ]
     order_id = models.CharField(max_length=12,primary_key=True)
     user = models.ForeignKey(User,on_delete=models.CASCADE)
@@ -61,6 +61,7 @@ class CartItem(models.Model):
     amount = models.PositiveIntegerField(default=1)
     added_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    related_order = models.CharField(max_length=12)
 
     class Meta:
         unique_together = ('user', 'product', 'variant')  # Prevent duplicate items in cart

@@ -164,8 +164,8 @@
                 </tr>
             </tbody>
         </table>
-        <form >
-            {% csrf_token %}
+        <form action="{% url 'confirmorder' order %}">
+            
             <button type="submit" class="confirm-btn">Confirm/Proceed-PaymentOptions</button>
         </form>
         {% else %}

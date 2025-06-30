@@ -19,4 +19,5 @@ urlpatterns = [
     path('account',views.account,name="account"),
     path('itemdetail/<slug:PCode>',views.itemdetail,name="itemdetail"),
     path('order',views.order,name="order"),
+    path('confirmorder/<slug:orderid>',views.confirmorder,name="confirmorder"),
 ]
