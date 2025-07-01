@@ -220,3 +220,17 @@ def confirmorder(request,orderid):
     cartitem.delete()
     return HttpResponse('Order placed Successfully!')
 
+def cancelorder(request,orderid):
+    order = Order.objects.filter(order_id=orderid)
+    print('Order:',order)
+    for item in order:
+        item.status = 'cancelled'
+        item.save()
+    return cart(request)
+
+def vieworder(request,orderid):
+    order = Order.objects.filter(order_id=orderid)
+    print('Order:',order)
+    orderitems = OrderItem.objects.filter(order=orderid)
+    print('OrderItems:',orderitems)
+    return HttpResponse('Viewing Order')

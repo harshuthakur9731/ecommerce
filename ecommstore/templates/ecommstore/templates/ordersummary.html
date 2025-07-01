@@ -130,11 +130,11 @@
     <div class="container">
         <h1>Your Order Summary</h1>
         {% if order_items %}
-        <div class="clearfix">
-            <form style="display:inline-block;">
+        <div class="clearfix">   
+            <form style="display:inline-block;" action="{% url 'cancelorder' order %}">
                 {% csrf_token %}
-                <button type="submit" class="cancel-order-btn">Cancel Order</button>
-            </form>
+                <button type="submit" class="cancel-order-btn">Cancel Order</button>       
+            </form><B>Order ID: {{order}}</B>
         </div>
         <table>
             <thead>

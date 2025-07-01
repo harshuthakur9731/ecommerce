@@ -127,12 +127,12 @@
                         <th>Order Date</th>     
                     </tr>
                     {% for key,value in myOrders %}
-                    <tr>
-                        <td>{{value.order_id}}</td>
-                        <td>{{value.amount}}</td>
-                        <td>{{value.status}}</td>
-                        <td>{{value.created_date}}</td>
-                    </tr>
+                        <tr>
+                            <td><a href="{% url 'vieworder' value.order_id %}">{{value.order_id}}</a></td>
+                            <td>{{value.amount}}</td>
+                            <td>{{value.status}}</td>
+                            <td>{{value.created_date}}</td>
+                        </tr>
                     {% endfor %}
                 </table>           
             </secton>

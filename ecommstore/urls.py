@@ -20,4 +20,7 @@ urlpatterns = [
     path('itemdetail/<slug:PCode>',views.itemdetail,name="itemdetail"),
     path('order',views.order,name="order"),
     path('confirmorder/<slug:orderid>',views.confirmorder,name="confirmorder"),
+    path('cancelorder/<slug:orderid>',views.cancelorder,name="cancelorder"),
+    path('vieworder/<slug:orderid>',views.vieworder,name="vieworder"),
+
 ]
