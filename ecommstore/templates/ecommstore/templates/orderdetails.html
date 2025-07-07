@@ -129,6 +129,8 @@
 {% block body %}
     <div class="container">
         <h1>Your Order Summary</h1>
+
+        #show cancel order when order date is within last 12 hrs else return/replacement if applicable.
         {% if order_items %}
         <div class="clearfix">   
             <form style="display:inline-block;" action="{% url 'cancelorder' order %}">
