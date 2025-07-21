@@ -3,6 +3,8 @@ from .models import Product,CartItem,UserProfile,Order,OrderItem
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.utils import timezone
+from datetime import timedelta
 
 # Create your views here.
 
@@ -212,6 +214,7 @@ def confirmorder(request,orderid):
     print('Order:',order)
     for item in order:
         item.status = 'placed'
+        item.updated_date = timezone.now()
         item.save()
     # order[0].status='placed'
     # order[0].save()
@@ -225,12 +228,32 @@ def cancelorder(request,orderid):
     print('Order:',order)
     for item in order:
         item.status = 'cancelled'
+        item.updated_date = timezone.now()
         item.save()
     return cart(request)
 
 def vieworder(request,orderid):
     order = Order.objects.filter(order_id=orderid)
     print('Order:',order)
-    orderitems = OrderItem.objects.filter(order=orderid)
+    orderitems = OrderItem.objects.filter(order=order[0].order_id)
     print('OrderItems:',orderitems)
-    return HttpResponse('Viewing Order')
+    finalorderitems = {}
+    for i in range(0,len(orderitems)):
+        finalorderitems[i] = orderitems[i]
+    orderamount = order[0].amount
+    time_diff = timezone.now()-order[0].updated_date
+    two_hours = timedelta(hours=2)
+    if time_diff <= two_hours and order[0].status != "cancelled":
+        cancel_allowed = 1
+        print("The time difference is less than or equal to 2 hours.")
+    else:
+        cancel_allowed = 0
+        print("The time difference is greater than 2 hours.")
+    print("time_diff",time_diff)
+
+    userprofile = UserProfile.objects.filter(user=request.user)
+    profilepicture = ''
+    if len(userprofile) > 0:
+        profilepicture = userprofile[0].profile_picture
+
+    return render(request,'ecommstore/templates/orderdetails.html',{"order":order[0],"order_items":finalorderitems.items(),"orderamount":orderamount,"cancel_allowed":cancel_allowed,"profilepicture":profilepicture})

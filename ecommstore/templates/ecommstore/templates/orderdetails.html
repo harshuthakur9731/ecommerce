@@ -128,48 +128,60 @@
 {% endblock %}
 {% block body %}
     <div class="container">
-        <h1>Your Order Summary</h1>
-
-        #show cancel order when order date is within last 12 hrs else return/replacement if applicable.
+        <h1>Your Order Details</h1>
+        <!-- show cancel order when order date is within last 12 hrs else return/replacement if applicable. -->
         {% if order_items %}
-        <div class="clearfix">   
-            <form style="display:inline-block;" action="{% url 'cancelorder' order %}">
-                {% csrf_token %}
-                <button type="submit" class="cancel-order-btn">Cancel Order</button>       
-            </form><B>Order ID: {{order}}</B>
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Item</th>
-                    <th class="variant">Variant</th>
-                    <th class="quantity">Quantity</th>
-                    <th class="price">Unit Price</th>
-                    <th class="amount">Amount</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for key, value in order_items %}
-                <tr>
-                    <td>{{ value.product }}</td>
-                    <td class="variant">{{ value.variant }}</td>
-                    <td class="quantity">{{ value.quantity }}</td>
-                    <td class="price">{{ value.unitprice|floatformat:2 }} Rs.</td>
-                    <td class="amount">{{ value.amount|floatformat:2 }} Rs.</td>
-                </tr>
-                {% endfor %}
-                <tr class="total-row">
-                    <td colspan="4">Total</td>
-                    <td class="amount">Rs. {{ orderamount|floatformat:2 }}</td>
-                    <td></td>
-                </tr>
-            </tbody>
-        </table>
-        <form action="{% url 'confirmorder' order %}">
-            
-            <button type="submit" class="confirm-btn">Confirm/Proceed-PaymentOptions</button>
-        </form>
+            <div class="clearfix">   
+                {% if cancel_allowed == 1 %}
+                    <form style="display:inline-block;" action="{% url 'cancelorder' order %}">
+                        {% csrf_token %}
+                        <button type="submit" class="cancel-order-btn">Cancel Order</button>       
+                    </form>
+                {% endif %}
+                <B>Order ID: {{order}}</B>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th class="variant">Variant</th>
+                        <th class="quantity">Quantity</th>
+                        <th class="price">Unit Price</th>
+                        <th class="amount">Amount</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for key, value in order_items %}
+                    <tr>
+                        <td>{{ value.product }}</td>
+                        <td class="variant">{{ value.variant }}</td>
+                        <td class="quantity">{{ value.quantity }}</td>
+                        <td class="price">{{ value.unitprice|floatformat:2 }} Rs.</td>
+                        <td class="amount">{{ value.amount|floatformat:2 }} Rs.</td>
+                        <td class="action"></td>
+                    </tr>
+                    {% endfor %}
+                    <tr class="total-row">
+                        <td colspan="4">Total</td>
+                        <td class="amount">Rs. {{ orderamount|floatformat:2 }}</td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+                {% if order.status != "placed" %}
+                {{order.status}} not placed
+                    <form action="{% url 'confirmorder' order %}">            
+                        <button type="submit" class="confirm-btn" >Confirm/Proceed-PaymentOptions</button>
+                    </form>
+                {% else %}
+                <b>Order Status:</b> {{order.status}}
+                
+                    <form role="alert">            
+                        <button type="submit" class="confirm-btn" disabled>Confirm/Proceed-PaymentOptions</button>
+                    </form>
+                {% endif %}
         {% else %}
         <p class="empty-cart">Your Order does not have any items included!<br>Please Add Item to your cart.
         </p>

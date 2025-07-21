@@ -22,5 +22,5 @@ urlpatterns = [
     path('confirmorder/<slug:orderid>',views.confirmorder,name="confirmorder"),
     path('cancelorder/<slug:orderid>',views.cancelorder,name="cancelorder"),
     path('vieworder/<slug:orderid>',views.vieworder,name="vieworder"),
-
+    #path('vieworder/cancelorder/<slug:orderid>',views.cancelorder,name="cancelorder"),
 ]
