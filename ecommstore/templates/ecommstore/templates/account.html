@@ -41,6 +41,9 @@
 
         .user-details h2 {
             margin-bottom: 20px;
+            font-family: "Sofia";
+            font-weight: 900;
+            font-size: 35px;
         }
 
         .user-details p {
@@ -72,7 +75,7 @@
             transform: translateY(2px);
         }
         .YourOrderDetails {
-            background-color: pink;
+            background-color: #b880f4;
             margin-top:30px;
             padding-left:20px;
             padding-bottom:20px;
@@ -80,17 +83,29 @@
             border: 2px solid black;
             border-radius: 3px;
         }
+        .YourOrderDetails h2{
+            font-family: "Sofia";
+            font-weight: 900;
+            font-size: 35px;
+        }
         table {
+            border-collapse: collapse;
             border:3px solid ;
             width:97%;
             text-align: center;
         }
         #YourOrders th {
-            border:2px solid;
+            font-family: Times;
+            font-size: 17px;
+            font-weight: 900;
+            border:3px solid;
             padding:5px;
-            background-color:darkgrey;
+            background-color: #774db0;
+            border-radius: 15px;
         }
         #YourOrders td {
+            font-family: Georgia ;
+            background-color: #edfcfc;
             border:2px solid;
             padding:5px;
         }
@@ -108,7 +123,7 @@
     <div class="right-panel">
         <div class="user-details">
             <form action="">
-                <h2>Account Details</h2>
+                <h2 class="font-effect-shadow-multiple">Account Details</h2>
                 <p><span class="label">Username:</span> <input type="text" id="Username" name="Username" value="{{ user.username }}" class="inputfields" style="margin-left: 150px;" readonly></p>
                 <p><span class="label">Email:</span> <input type="email" id="Email" name="Email" value="{{ user.email }}" class="inputfields" style="margin-left: 189px;"></p>
                 <p><span class="label">First name:</span> <input type="text" id="FirstName" name="FirstName" value="{{ user.first_name }}" class="inputfields" style="margin-left: 146px;"></p>
@@ -123,23 +138,27 @@
         </div>
         <div class="YourOrderDetails">
             <secton name="YourOrderDetails">
-                <h2 style="margin-top: 15px;">Your Orders:</h2>
-                <table id="YourOrders">                   
-                    <tr>
-                        <th>Order_ID</th>
-                        <th>Amount</th>
-                        <th>Status</th>
-                        <th>Order Date</th>     
-                    </tr>
-                    {% for key,value in myOrders %}
+                <h2 class="font-effect-shadow-multiple" style="margin-top: 15px;">Your Orders:</h2>
+                <div style="overflow-x:auto;">
+                    <table id="YourOrders">                   
                         <tr>
-                            <td><a href="{% url 'vieworder' value.order_id %}">{{value.order_id}}</a></td>
-                            <td>{{value.amount}}</td>
-                            <td>{{value.status}}</td>
-                            <td>{{value.created_date}}</td>
+                            <th>Order_ID</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Order Date</th>
+                            <th>Updated Date</th>     
                         </tr>
-                    {% endfor %}
-                </table>           
+                        {% for key,value in myOrders %}
+                            <tr>
+                                <td><a href="{% url 'vieworder' value.order_id %}">{{value.order_id}}</a></td>
+                                <td>{{value.amount}}</td>
+                                <td>{{value.status}}</td>
+                                <td>{{value.created_date}}</td>
+                                <td>{{value.updated_date}}</td>
+                            </tr>
+                        {% endfor %}
+                    </table>  
+                </div>         
             </secton>
         </div>
     </div>
