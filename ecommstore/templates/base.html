@@ -87,6 +87,12 @@
             width: 90%;
             max-width: 1200px;
             margin: 0 auto 2rem auto;
+            background-color: #6cec77;
+            
+        }
+
+        .Matter {
+            background-color: #B9EBE4;
         }
 
         /* Products Grid */
@@ -94,6 +100,8 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 1.5rem;
+            margin-left: 10px;
+            margin-right: 10px;
         }
         .product-card {
             background-color: #fff;
@@ -222,56 +230,59 @@
     </nav>
 
     {% block body %}
-    <section class="hero">
-        <h1>Discover Amazing Products At Great Prices</h1>
-    </section>
+    <div class="Matter">
+        <section class="hero">
+            <h1>Discover Amazing Products At Great Prices</h1>
+        </section>
 
-    <main>
-        {% block content %}
-        <section class="carousel" style="margin-bottom:40px;">
-            <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
-            <div class="carousel-inner">
-                {% for image in images %}
-                <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                <img src="{{image}}" class="d-block w-100" alt="Slide {{ forloop.counter }}">
+        <main>
+            {% block content %}
+            <section class="carousel" style="margin-bottom:40px;">
+                <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    {% for image in images %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    <img src="{{image}}" class="d-block w-100" alt="Slide {{ forloop.counter }}">
+                    </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
-            </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-            </button>
-            </div>
-        </section>
-        <section>
-            <div class="products">
-                <!-- Example Product Card -->
-                {% for i in products %}
-                <!-- {% if forloop.counter0|divisibleby:1 %} -->
-                    <div class="product-card">  
-                        <form method="post" action="addToCartAct/{{i.product_code}}">
-                            {% csrf_token %}                  
-                            <a href="itemdetail/{{i.product_code}}"><img src="{{i.image}}" alt="Product Name" class="product-image" /></a>
-                            <h2 class="product-title">{{i.name}}</h2>
-                            <p class="product-price">{{i.price}} Rs.</p>
-                            <button class="btn-add-cart">Add to Cart</button>
-                        </form>
-                    </div>        
-                            <!-- {% if forloop.counter0|divisibleby:4 and forloop.counter0 != 0 %}
-                                <br>
-                            {% endif %} -->
-                <!-- {% endif %} -->
-                {% endfor %}
-                <!-- More products can be iterated here -->
-            </div>
-        </section>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+                </div>
+            </section>
+            <section>
+                <div class="products">
+                    <!-- Example Product Card -->
+                    {% for i in products %}
+                    <!-- {% if forloop.counter0|divisibleby:1 %} -->
+                        <div class="product-card">  
+                            <form method="post" action="addToCartAct/{{i.product_code}}">
+                                {% csrf_token %}                  
+                                <a href="itemdetail/{{i.product_code}}"><img src="{{i.image}}" alt="Product Name" class="product-image" /></a>
+                                <h2 class="product-title">{{i.name}}</h2>
+                                <p class="product-price">{{i.price}} Rs.</p>
+                                <button class="btn-add-cart">Add to Cart</button>
+                            </form>
+                        </div>        
+                                <!-- {% if forloop.counter0|divisibleby:4 and forloop.counter0 != 0 %}
+                                    <br>
+                                {% endif %} -->
+                    <!-- {% endif %} -->
+                    {% endfor %}
+                    <!-- More products can be iterated here -->
+                </div>
+            </section>
+        </div>
         {% endblock %}
-        {% endblock %}
-    </main>
+        </main>
+    </div>
+    {% endblock %}
 
     <footer>
         &copy; 2025 ShopMate. All rights reserved.
