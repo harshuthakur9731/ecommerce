@@ -15,7 +15,7 @@ body {
 .container {
     max-width: 900px;
     margin: 2rem auto;
-    background: #fff;
+    background: #6cec77;
     <!-- background-color: #eff8f8; -->
     border-radius: 8px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.5);
@@ -135,80 +135,82 @@ table.spec-table th {
 {% endblock %}
 
 {% block body %}
-    
-    <div class="container" role="main">
-        <section class="item-header" aria-label="Item overview">
-            <div class="item-image">         
-                <!-- <section class="carousel" style="margin-bottom:40px;"> -->
-                    <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
-                    <div class="carousel-inner">
-                        {% for image in images %}
-                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                        <img src="/{{image}}/" class="d-block w-100" alt="Slide {{ forloop.counter }}">
+    <div class="Matter">
+        <div class="container" role="main">
+            <section class="item-header" aria-label="Item overview">
+                <div class="item-image">         
+                    <!-- <section class="carousel" style="margin-bottom:40px;"> -->
+                        <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            {% for image in images %}
+                            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                            <img src="/{{image}}/" class="d-block w-100" alt="Slide {{ forloop.counter }}">
+                            </div>
+                            {% endfor %}
                         </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                        </div>
+                    <!-- </section> -->
+                    <!-- {% if name %}
+                        <img src="/{{image}}/" alt="Image of {{ name }}" /> -->
+                    {% else %}
+                        <img src="https://via.placeholder.com/300x300?text=No+Image" alt="No image available" />
+                    {% endif %}
+                </div>
+                <div class="item-info">
+                    <form method="post" action="{% url 'addToCartAct' product_code %}">
+                    {% csrf_token %}
+                    <h1 class="item-name">{{ name }}</h1>
+                    <p class="item-description">{{ description }}</p>
+                    <p class="item-price">${{ price }}</p>
+                    <button class="add-cart-button">ADD TO CART</button>
+                    </form>
+                </div>
+            </section>
+            
+            {% if specifications %}
+                <section class="specifications" aria-label="Item specifications">
+                    <h2>Specifications</h2>
+                    <table class="spec-table">
+                        <tbody>
+                        {% for key, value in specifications.items %}
+                            <tr>
+                                <th>{{ key }}</th>
+                                <td>{{ value }}</td>
+                            </tr>
                         {% endfor %}
-                    </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Previous</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Next</span>
-                    </button>
-                    </div>
-                <!-- </section> -->
-                <!-- {% if name %}
-                    <img src="/{{image}}/" alt="Image of {{ name }}" /> -->
-                {% else %}
-                    <img src="https://via.placeholder.com/300x300?text=No+Image" alt="No image available" />
-                {% endif %}
-            </div>
-            <div class="item-info">
-                <form method="post" action="{% url 'addToCartAct' product_code %}">
-                {% csrf_token %}
-                <h1 class="item-name">{{ name }}</h1>
-                <p class="item-description">{{ description }}</p>
-                <p class="item-price">${{ price }}</p>
-                <button class="add-cart-button">ADD TO CART</button>
-                </form>
-            </div>
-        </section>
-        
-        {% if specifications %}
-            <section class="specifications" aria-label="Item specifications">
-                <h2>Specifications</h2>
-                <table class="spec-table">
-                    <tbody>
-                    {% for key, value in specifications.items %}
-                        <tr>
-                            <th>{{ key }}</th>
-                            <td>{{ value }}</td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </section>
-        {% else %}
-            <p><em>No specifications available.</em></p>
-        {% endif %}
+                        </tbody>
+                    </table>
+                </section>
+            {% else %}
+                <p><em>No specifications available.</em></p>
+            {% endif %}
 
-        {% if termsnconditions %}
-            <section class="specifications" aria-label="Terms and conditions">
-                <h2>Terms and conditions</h2>
-                <table class="spec-table">
-                    <tbody>
-                    {% for key, value in termsnconditions.items %}
-                        <tr>
-                            <th>{{ key }}</th>
-                            <td>{{ value }}</td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </section>
-        {% else %}
-            <p><em>No terms and conditions available.</em></p>
-        {% endif %}
+            {% if termsnconditions %}
+                <section class="specifications" aria-label="Terms and conditions">
+                    <h2>Terms and conditions</h2>
+                    <table class="spec-table">
+                        <tbody>
+                        {% for key, value in termsnconditions.items %}
+                            <tr>
+                                <th>{{ key }}</th>
+                                <td>{{ value }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </section>
+            {% else %}
+                <p><em>No terms and conditions available.</em></p>
+            {% endif %}
+        </div>
+    
     </div>
 {% endblock %}
