@@ -88,6 +88,7 @@
             max-width: 1200px;
             margin: 0 auto 2rem auto;
             background-color: #6cec77;
+            padding-bottom:20px;
             
         }
 
@@ -150,6 +151,30 @@
         .btn-add-cart:hover {
             background-color: #0056b3;
         }
+        .search_btn{
+            background-color: #a1cbf5;
+            padding: 3px;
+            width: 87px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: ;
+            font-weight: 600;
+            border: 2px solid black;
+            transition: background-color 0.3s ease;
+            
+        }
+        .search_input{
+            background-color: #a1cbf5;
+            border-radius: 5px;
+            padding: 3px;
+            width: 350px;
+            margin-left: 300px;
+            
+            font-weight: 400;
+            padding-left: 10px;
+            border: 1px solid black;
+
+        }
 
         /* Footer */
         footer {
@@ -211,6 +236,12 @@
         <div class="logo">
             <a href="{% url 'home' %}">ShopMate</a>
         </div>
+        <div class="search_bar">
+            <form method="GET" action="{% url 'search_products' %}">
+                <input class="search_input" type="text" name="q" value="{{query}}" placeholder="Search Your Products...">
+                <button class="search_btn" >Search</button>
+            </form>
+        </div>
         <div id="main">
             <ul>
                 <li><a href="{% url 'home' %}">Home</a></li>
@@ -236,26 +267,28 @@
         </section>
 
         <main>
-            {% block content %}
-            <section class="carousel" style="margin-bottom:40px;">
-                <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
-                <div class="carousel-inner">
-                    {% for image in images %}
-                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                    <img src="{{image}}" class="d-block w-100" alt="Slide {{ forloop.counter }}">
+           {% block content %}
+           {% block crousl %}
+                <section class="carousel" style="margin-bottom:40px;">
+                    <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        {% for image in images %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <img src="{{image}}" class="d-block w-100" alt="Slide {{ forloop.counter }}">
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
-                </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Previous</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Next</span>
-                </button>
-                </div>
-            </section>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                    </div>
+                </section>
+            {% endblock %}
             <section>
                 <div class="products">
                     <!-- Example Product Card -->

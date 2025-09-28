@@ -7,6 +7,7 @@ class Product(models.Model):
     product_code = models.CharField(max_length=12,primary_key=True)
     name = models.CharField(max_length=200)
     description = models.TextField()
+    category = models.CharField(max_length=30)
     image = models.ImageField(upload_to = 'static', blank=True, null=True)
     price = models.DecimalField(max_digits=12,decimal_places=2)
     stock = models.IntegerField()

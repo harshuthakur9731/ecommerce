@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.utils import timezone
 from datetime import timedelta
+from django.db.models import Q
 
 # Create your views here.
 
@@ -40,7 +41,16 @@ def signup(request):
     return redirect('login')
 
 def shop(request):
-    return render(request,'ecommstore/templates/base.html')
+    userprofile = UserProfile.objects.filter(user=request.user)
+    profilepicture = ''
+    if len(userprofile) > 0:
+        profilepicture = userprofile[0].profile_picture
+    images = [
+        '/static/fashion25.png',
+        '/static/fashiongirl.png',       
+        '/static/fashion10.png',
+    ]
+    return render(request,'ecommstore/templates/shop.html',{'profilepicture':profilepicture})
 
 def account(request):
     userprofile = UserProfile.objects.filter(user=request.user)
@@ -257,3 +267,17 @@ def vieworder(request,orderid):
         profilepicture = userprofile[0].profile_picture
 
     return render(request,'ecommstore/templates/orderdetails.html',{"order":order[0],"order_items":finalorderitems.items(),"orderamount":orderamount,"cancel_allowed":cancel_allowed,"profilepicture":profilepicture})
+
+def search_products(request):
+    query = request.GET.get('q')
+    result = []
+    if query:
+        results = Product.objects.filter(
+            Q(name__icontains=query)|
+            Q(description__icontains=query)|
+            Q(category__icontains=query)|
+            Q(desc1__icontains=query)
+        ).distinct()
+
+    return render(request,'ecommstore/templates/base.html',{'products':results,'query':query})
+    
