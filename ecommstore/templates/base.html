@@ -106,6 +106,7 @@
         }
         .product-card {
             background-color: #fff;
+            max-width: 300px;
             border-radius: 10px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             padding: 1rem;
@@ -113,6 +114,8 @@
             flex-direction: column;
             justify-content: space-between;
             transition: transform 0.3s ease;
+            margin-top: 20px;
+            
         }
         .product-card:hover {
             transform: translateY(-5px);
@@ -238,7 +241,7 @@
         </div>
         <div class="search_bar">
             <form method="GET" action="{% url 'search_products' %}">
-                <input class="search_input" type="text" name="q" value="{{query}}" placeholder="Search Your Products...">
+                <input class="search_input" type="text" name="q" value="{{query}}" default="" placeholder="Search Your Products...">
                 <button class="search_btn" >Search</button>
             </form>
         </div>

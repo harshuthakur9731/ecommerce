@@ -270,7 +270,17 @@ def vieworder(request,orderid):
 
 def search_products(request):
     query = request.GET.get('q')
-    result = []
+    results = []
+    userprofile = UserProfile.objects.filter(user=request.user)
+    profilepicture = ''
+    if len(userprofile) > 0:
+        profilepicture = userprofile[0].profile_picture
+    images = [
+        '/static/fashion25.png',
+        '/static/fashiongirl.png',       
+        '/static/fashion10.png',
+    ]
+    
     if query:
         results = Product.objects.filter(
             Q(name__icontains=query)|
@@ -278,6 +288,8 @@ def search_products(request):
             Q(category__icontains=query)|
             Q(desc1__icontains=query)
         ).distinct()
-
-    return render(request,'ecommstore/templates/base.html',{'products':results,'query':query})
+        return render(request,'ecommstore/templates/shop.html',{'products':results,'query':query,'images': images,'profilepicture':profilepicture})
+    else:
+        results = Product.objects.filter()
+        return render(request,'ecommstore/templates/base.html',{'products': results,'images': images,'profilepicture':profilepicture})
     
