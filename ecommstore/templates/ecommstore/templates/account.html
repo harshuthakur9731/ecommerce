@@ -1,165 +1,729 @@
+
 {% extends 'base.html' %}
-{% csrf_token %}
-{% block title %}Account{% endblock %}
+
+{% load static %}
+
+{% block title %}My Account | ShopMate{% endblock %}
+
 {% block css %}
-        body{
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;  
-            }
+/* ===== ShopMate Account Dashboard ===== */
+.account-page {
+    --ink: #171717;
+    --muted: #62676d;
+    --line: #e1e4dc;
+    --lime: #d8ff3e;
+    --green: #526a0d;
 
-        .profile-container {
-            display: flex;
-            height: 100%;
-            margin-bottom:10px;
-        }
+    min-height: 100vh;
+    padding: 42px 0 70px;
+    color: var(--ink);
+    background:
+        radial-gradient(ellipse at 8% 0%, #edf5d7 0%, transparent 32%),
+        linear-gradient(180deg, #f5f6f1 0%, #ffffff 65%);
+}
 
-        .left-panel {
-            width: 40%;
-            background-color: #f4f4f4;
-            display: flex;
-            padding-left: 13%;
-            padding-top: 10%;
-            <!-- align-items: center; -->
-            <!-- justify-content: center; -->
-        }
+.account-page,
+.account-page * {
+    box-sizing: border-box;
+}
 
-        .profile-image {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 5px solid #ccc;
-            position:fixed;
-        }
+.account-page .account-container {
+    width: min(1180px, calc(100% - 48px));
+    margin: 0 auto;
+}
 
-        .right-panel {
-            width: 60%;        
-            padding: 40px;
-            background-color: #6095fe ;
-        }
+/* Page heading */
+.account-page .account-heading {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 28px;
+    padding: 30px 34px;
+    color: white;
+    background: linear-gradient(120deg, #171717, #30332b);
+    border-radius: 22px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, .12);
+}
 
-        .user-details h2 {
-            margin-bottom: 20px;
-            font-family: "Sofia";
-            font-weight: 900;
-            font-size: 35px;
-        }
+.account-page .account-heading::after {
+    content: "";
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    top: -75px;
+    right: 8%;
+    background: var(--lime);
+    opacity: .12;
+    border-radius: 50%;
+}
 
-        .user-details p {
-            font-size: 18px;
-            margin: 10px 0;
-        }
+.account-page .account-heading h1 {
+    position: relative;
+    z-index: 1;
+    margin: 0 0 8px;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 900;
+    letter-spacing: -.06em;
+}
 
-        .label {
-            font-weight: bold;
-        }
-        .inputfields{
-            text-align: center;
-            width: 250px;
-        }
-        .button{
-            background-color: #04AA6D;
-            color: white;
-            border: solid black 2px;
-            padding: 2px 10px;
-            text-align: center;
-            text-decoration: none;
-            font-size: 16px;
-            border-radius: 6px;
-            box-shadow: 0 5px #666;
-        }
-        .button:hover {background-color: #3e8e41}
-        .button:active {
-            background-color: #3e8e41;           
-            transform: translateY(2px);
-        }
-        .YourOrderDetails {
-            background-color: #b880f4;
-            margin-top:30px;
-            padding-left:20px;
-            padding-bottom:20px;
-            padding-top:3px;
-            border: 2px solid black;
-            border-radius: 3px;
-        }
-        .YourOrderDetails h2{
-            font-family: "Sofia";
-            font-weight: 900;
-            font-size: 35px;
-        }
-        table {
-            border-collapse: collapse;
-            border:3px solid ;
-            width:97%;
-            text-align: center;
-        }
-        #YourOrders th {
-            font-family: Times;
-            font-size: 17px;
-            font-weight: 900;
-            border:3px solid;
-            padding:5px;
-            background-color: #774db0;
-            border-radius: 15px;
-        }
-        #YourOrders td {
-            font-family: Georgia ;
-            background-color: #edfcfc;
-            border:2px solid;
-            padding:5px;
-        }
-        #YourOrders tr:hover {
-            background-color: white;
-            cursor: pointer;
-        }
+.account-page .account-heading p {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    color: #e1e4dc;
+    font-size: .98rem;
+    line-height: 1.7;
+}
 
+/* Main columns */
+.account-page .account-layout {
+    display: grid;
+    grid-template-columns: 290px minmax(0, 1fr);
+    gap: 25px;
+    align-items: start;
+}
+
+/* Profile card */
+.account-page .profile-card {
+    position: relative;
+    overflow: hidden;
+    padding: 30px 22px;
+    color: white;
+    text-align: center;
+    background: linear-gradient(155deg, #272a22, #151515 75%);
+    border: 1px solid #373a32;
+    border-radius: 22px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, .12);
+}
+
+.account-page .profile-card::before {
+    content: "";
+    position: absolute;
+    top: -75px;
+    left: -45px;
+    width: 180px;
+    height: 180px;
+    background: var(--lime);
+    opacity: .13;
+    border-radius: 50%;
+}
+
+.account-page .profile-image {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 142px;
+    height: 142px;
+    margin: 0 auto 19px;
+    object-fit: cover;
+    background: #f4f4ee;
+    border: 5px solid var(--lime);
+    border-radius: 50%;
+    box-shadow: 0 0 0 7px rgba(216, 255, 62, .10);
+}
+
+.account-page .profile-card h2 {
+    position: relative;
+    margin: 0 0 7px;
+    color: white;
+    font-size: 1.35rem;
+    font-weight: 850;
+    overflow-wrap: anywhere;
+}
+
+.account-page .profile-email {
+    margin: 0;
+    color: #d0d2ca;
+    font-size: .88rem;
+    overflow-wrap: anywhere;
+}
+
+.account-page .profile-divider {
+    height: 1px;
+    margin: 24px 0;
+    background: #46483f;
+}
+
+.account-page .profile-caption {
+    margin: 10px 0 0;
+    color: #d4d6ce;
+    font-size: .85rem;
+    line-height: 1.7;
+}
+
+.account-page .profile-caption:first-of-type {
+    display: inline-block;
+    padding: 7px 12px;
+    color: var(--lime);
+    background: #363b29;
+    border-radius: 30px;
+    font-weight: 700;
+}
+
+/* Form and order cards */
+.account-page .account-main {
+    min-width: 0;
+}
+
+.account-page .account-card,
+.account-page .orders-card {
+    padding: 30px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    box-shadow: 0 8px 28px rgba(27, 31, 20, .055);
+    transition: box-shadow .25s ease, transform .25s ease;
+}
+
+.account-page .account-card:hover,
+.account-page .orders-card:hover {
+    box-shadow: 0 14px 34px rgba(27, 31, 20, .09);
+}
+
+.account-page .orders-card {
+    margin-top: 24px;
+}
+
+.account-page .card-heading {
+    margin: 0 0 8px;
+    font-size: 1.55rem;
+    font-weight: 900;
+    letter-spacing: -.045em;
+}
+
+.account-page .card-subheading {
+    margin: 0 0 27px;
+    color: var(--muted);
+    font-size: .93rem;
+    line-height: 1.7;
+}
+
+/* Input fields */
+.account-page .account-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 21px 17px;
+}
+
+.account-page .form-field {
+    min-width: 0;
+}
+
+.account-page .form-field.full-width {
+    grid-column: 1 / -1;
+}
+
+.account-page .form-field label {
+    display: block;
+    margin-bottom: 8px;
+    color: #34372e;
+    font-size: .87rem;
+    font-weight: 800;
+}
+
+.account-page .form-field input {
+    display: block;
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 14px;
+    color: #171717;
+    background: #fafbf7;
+    border: 1px solid #dfe2d7;
+    border-radius: 11px;
+    outline: none;
+    font: inherit;
+    font-size: .93rem;
+    transition: border-color .2s, box-shadow .2s, background .2s;
+}
+
+.account-page .form-field input:hover {
+    border-color: #a7b77b;
+}
+
+.account-page .form-field input:focus {
+    background: #fff;
+    border-color: #82972c;
+    box-shadow: 0 0 0 4px rgba(216, 255, 62, .24);
+}
+
+.account-page .form-field input[readonly] {
+    color: #565a50;
+    background: #eff0eb;
+    border-color: #e5e6df;
+}
+
+.account-page .field-help {
+    display: block;
+    margin-top: 7px;
+    color: var(--muted);
+    font-size: .79rem;
+    line-height: 1.6;
+}
+
+.account-page input[type="file"] {
+    padding: 8px;
+    font-size: .83rem;
+}
+
+.account-page input[type="file"]::file-selector-button {
+    margin-right: 10px;
+    padding: 7px 10px;
+    color: #222;
+    background: var(--lime);
+    border: 0;
+    border-radius: 7px;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+/* Save button */
+.account-page .button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 49px;
+    margin-top: 28px;
+    padding: 13px 29px;
+    color: #171717;
+    background: var(--lime);
+    border: 1px solid var(--lime);
+    border-radius: 999px;
+    font-size: .94rem;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 5px 14px rgba(120, 145, 22, .15);
+    transition: background .2s, color .2s, transform .2s;
+}
+
+.account-page .button:hover {
+    color: white;
+    background: #171717;
+    border-color: #171717;
+    transform: translateY(-2px);
+}
+
+.account-page .button:focus-visible {
+    outline: 3px solid #81952b;
+    outline-offset: 4px;
+}
+
+/* Orders heading */
+.account-page .orders-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 22px;
+}
+
+.account-page .orders-header .card-heading {
+    margin: 0;
+}
+
+.account-page .orders-count {
+    padding: 8px 13px;
+    color: #364609;
+    background: #edfac0;
+    border: 1px solid #dceca1;
+    border-radius: 999px;
+    font-size: .78rem;
+    font-weight: 850;
+}
+
+/* Order table */
+.account-page .orders-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #e4e6de;
+    border-radius: 13px;
+}
+
+.account-page table#YourOrders {
+    width: 100%;
+    min-width: 680px;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: .88rem;
+}
+
+.account-page #YourOrders th {
+    padding: 16px;
+    color: white;
+    background: #272a22;
+    border-bottom: 2px solid var(--lime);
+    font-size: .77rem;
+    font-weight: 850;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.account-page #YourOrders td {
+    padding: 16px;
+    color: #35372f;
+    background: white;
+    border-bottom: 1px solid #e9eae4;
+    white-space: nowrap;
+}
+
+.account-page #YourOrders tbody tr:nth-child(even) td {
+    background: #f8f9f4;
+}
+
+.account-page #YourOrders tbody tr:hover td {
+    background: #eff6db;
+}
+
+.account-page #YourOrders tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.account-page #YourOrders td a {
+    color: #43570a;
+    font-weight: 850;
+    text-decoration: underline;
+    text-decoration-color: #b9d65a;
+    text-underline-offset: 4px;
+}
+
+.account-page #YourOrders td a:hover {
+    color: #171717;
+}
+
+.account-page .empty-orders {
+    padding: 30px !important;
+    color: var(--muted) !important;
+    text-align: center;
+    white-space: normal !important;
+}
+
+/* Responsive layout */
+@media (max-width: 850px) {
+    .account-page .account-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .account-page .profile-card {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        padding: 23px;
+        text-align: left;
+    }
+
+    .account-page .profile-image {
+        flex: 0 0 100px;
+        width: 100px;
+        height: 100px;
+        margin: 0;
+    }
+
+    .account-page .profile-divider {
+        margin: 13px 0;
+    }
+}
+
+@media (max-width: 520px) {
+    .account-page {
+        padding: 22px 0 40px;
+    }
+
+    .account-page .account-container {
+        width: calc(100% - 24px);
+    }
+
+    .account-page .account-heading {
+        padding: 24px 20px;
+        border-radius: 17px;
+    }
+
+    .account-page .account-heading p {
+        font-size: .9rem;
+    }
+
+    .account-page .profile-card {
+        gap: 15px;
+        padding: 18px 15px;
+        border-radius: 17px;
+    }
+
+    .account-page .profile-image {
+        flex-basis: 76px;
+        width: 76px;
+        height: 76px;
+    }
+
+    .account-page .account-card,
+    .account-page .orders-card {
+        padding: 20px 15px;
+        border-radius: 16px;
+    }
+
+    .account-page .account-form-grid {
+        grid-template-columns: 1fr;
+        gap: 17px;
+    }
+
+    .account-page .form-field.full-width {
+        grid-column: auto;
+    }
+
+    .account-page .button {
+        width: 100%;
+    }
+
+    .account-page .orders-card {
+        margin-top: 16px;
+    }
+
+    .account-page .orders-header {
+        align-items: flex-start;
+    }
+}
+
+.message {
+    padding: 14px 18px;
+    margin: 15px 0;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.message.success {
+    background-color: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.message.error {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.message.warning {
+    background-color: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+.message.info {
+    background-color: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+}
 {% endblock %}
+
 {% block body %}
-<div class="profile-container">
-    <div class="left-panel">
-        <input type="image" src="{% if profilepicture %}{{ profilepicture }}{% else %}/static/default-profile.png{% endif %}" alt="Profile Picture" class="profile-image">
-    </div>
-    <div class="right-panel">
-        <div class="user-details">
-            <form action="">
-                <h2 class="font-effect-shadow-multiple">Account Details</h2>
-                <p><span class="label">Username:</span> <input type="text" id="Username" name="Username" value="{{ user.username }}" class="inputfields" style="margin-left: 150px;" readonly></p>
-                <p><span class="label">Email:</span> <input type="email" id="Email" name="Email" value="{{ user.email }}" class="inputfields" style="margin-left: 189px;"></p>
-                <p><span class="label">First name:</span> <input type="text" id="FirstName" name="FirstName" value="{{ user.first_name }}" class="inputfields" style="margin-left: 146px;"></p>
-                <p><span class="label">Last name:</span> <input type="text" id="LastName" name="LastName" value="{{ user.last_name }}" class="inputfields" style="margin-left: 150px;"></p>
-                <p><span class="label">Address:</span> <input type="text" id="Address" name="Address" value="{{ address }}" class="inputfields" style="margin-left: 168px;"></p>
-                <p><span class="label">Last login:</span> <input type="datetime" id="LastLogin" name="LastLogin" value="{{ user.last_login }}" class="inputfields" style="margin-left: 154px;" readonly></p>
-                <p><span class="label">Date joined:</span> <input type="datetime" id="DateJoined" name="DateJoined" value="{{ user.date_joined }}" class="inputfields" style="margin-left: 138px;" readonly></p>
-                <p><span class="label">Is Active:</span> <input type="boolean" id="IsActive" name="IsActive" value="{{ user.is_active }}" class="inputfields" style="margin-left: 164px;" readonly></p>  
-                <p><span class="label">Profile Pic:</span> <input type="file" id="profilepic" name="profilepic" value="{{ profilepicture }}" class="inputfields" style="margin-left: 150px;"></p>
-                <button class="button">SAVE</button>          
-            </form> 
+{% if messages %}
+    {% for message in messages %}
+        <div class="message {{ message.tags }}">
+            {{ message }}
         </div>
-        <div class="YourOrderDetails">
-            <secton name="YourOrderDetails">
-                <h2 class="font-effect-shadow-multiple" style="margin-top: 15px;">Your Orders:</h2>
-                <div style="overflow-x:auto;">
-                    <table id="YourOrders">                   
-                        <tr>
-                            <th>Order_ID</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Order Date</th>
-                            <th>Updated Date</th>     
-                        </tr>
-                        {% for key,value in myOrders %}
-                            <tr>
-                                <td><a href="{% url 'vieworder' value.order_id %}">{{value.order_id}}</a></td>
-                                <td>{{value.amount}}</td>
-                                <td>{{value.status}}</td>
-                                <td>{{value.created_date}}</td>
-                                <td>{{value.updated_date}}</td>
-                            </tr>
-                        {% endfor %}
-                    </table>  
-                </div>         
-            </secton>
+    {% endfor %}
+{% endif %}
+<div class="account-page">
+    <div class="account-container">
+
+        <header class="account-heading">
+            <h1>My Account</h1>
+            <p>Manage your personal information and keep track of your orders.</p>
+        </header>
+
+        <div class="account-layout">
+
+            <!-- Profile summary -->
+            <aside class="profile-card">
+                <img
+                    src="{% if profilepicture %}{{ profilepicture.url }}{% else %}{% static 'default-profile.png' %}{% endif %}"
+                    alt="Profile picture"
+                    class="profile-image"
+                >
+
+                <div>
+                    <h2>
+                        {% if user.get_full_name %}
+                            {{ user.get_full_name }}
+                        {% else %}
+                            {{ user.username }}
+                        {% endif %}
+                    </h2>
+                    <p class="profile-email">{{ user.email|default:"No email added" }}</p>
+
+                    <div class="profile-divider"></div>
+
+                    <p class="profile-caption">
+                        Member since {{ user.date_joined|date:"d M Y" }}
+                    </p>
+                    <p class="profile-caption">
+                        Keep your account details up to date for a smoother shopping experience.
+                    </p>
+                </div>
+            </aside>
+
+            <div class="account-main">
+
+                <!-- Account details -->
+                <section class="account-card">
+                    <h2 class="card-heading">Account Details</h2>
+                    <p class="card-subheading">Update your personal information below.</p>
+
+                    <form
+                        method="POST"
+                        action="{% url 'updateMyInfo' %}"
+                        enctype="multipart/form-data"
+                    >
+                        {% csrf_token %}
+
+                        <div class="account-form-grid">
+
+                            <div class="form-field">
+                                <label for="Username">Username</label>
+                                <input
+                                    type="text"
+                                    id="Username"
+                                    name="Username"
+                                    value="{{ user.username }}"
+                                    readonly
+                                >
+                            </div>
+
+                            <div class="form-field">
+                                <label for="Email">Email address</label>
+                                <input
+                                    type="email"
+                                    id="Email"
+                                    name="Email"
+                                    value="{{ user.email }}"
+                                    autocomplete="email"
+                                >
+                            </div>
+
+                            <div class="form-field">
+                                <label for="FirstName">First name</label>
+                                <input
+                                    type="text"
+                                    id="FirstName"
+                                    name="FirstName"
+                                    value="{{ user.first_name }}"
+                                    autocomplete="given-name"
+                                >
+                            </div>
+
+                            <div class="form-field">
+                                <label for="LastName">Last name</label>
+                                <input
+                                    type="text"
+                                    id="LastName"
+                                    name="LastName"
+                                    value="{{ user.last_name }}"
+                                    autocomplete="family-name"
+                                >
+                            </div>
+
+                            <div class="form-field full-width">
+                                <label for="Address">Address</label>
+                                <input
+                                    type="text"
+                                    id="Address"
+                                    name="Address"
+                                    value="{{ address }}"
+                                    autocomplete="street-address"
+                                >
+                            </div>
+
+                            <div class="form-field">
+                                <label for="LastLogin">Last login</label>
+                                <input
+                                    type="text"
+                                    id="LastLogin"
+                                    value="{{ user.last_login|date:'d M Y, h:i A'|default:'Not available' }}"
+                                    readonly
+                                >
+                            </div>
+
+                            <div class="form-field">
+                                <label for="DateJoined">Date joined</label>
+                                <input
+                                    type="text"
+                                    id="DateJoined"
+                                    value="{{ user.date_joined|date:'d M Y, h:i A' }}"
+                                    readonly
+                                >
+                            </div>
+
+                            <div class="form-field">
+                                <label for="IsActive">Account status</label>
+                                <input
+                                    type="text"
+                                    id="IsActive"
+                                    value="{% if user.is_active %}Active{% else %}Inactive{% endif %}"
+                                    readonly
+                                >
+                            </div>
+
+                            <div class="form-field">
+                                <label for="profilepic">Profile picture</label>
+                                <input
+                                    type="file"
+                                    id="profilepic"
+                                    name="profilepic"
+                                    accept="image/*"
+                                >
+                                <span class="field-help">Choose an image to update your profile picture.</span>
+                            </div>
+
+                        </div>
+
+                        <button type="submit" class="button">Save Changes</button>
+                    </form>
+                </section>
+
+                <!-- Order history -->
+                <section class="orders-card">
+                    <div class="orders-header">
+                        <h2 class="card-heading">Your Orders</h2>
+                        <span class="orders-count">Order History</span>
+                    </div>
+
+                    <div class="orders-table-wrap">
+                        <table id="YourOrders">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Order Date</th>
+                                    <th>Updated Date</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for order in myOrders %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'vieworder' order.order_id %}">
+                                            {{ order.order_id }}
+                                        </a>
+                                    </td>
+                                    <td>₹{{ order.amount|default:0 }}</td>
+                                    <td>{{ order.status|title }}</td>
+                                    <td>{{ order.created_date|date:"d M Y, h:i A" }}</td>
+                                    <td>{{ order.updated_date|date:"d M Y, h:i A" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="empty-orders">
+                                        You haven't placed any orders yet. Your orders will appear here.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+            </div>
         </div>
     </div>
 </div>

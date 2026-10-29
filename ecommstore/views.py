@@ -1,4 +1,4 @@
-from django.shortcuts import render,redirect,HttpResponse
+from django.shortcuts import render,redirect,HttpResponse,get_object_or_404
 from .models import Product,CartItem,UserProfile,Order,OrderItem
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -6,9 +6,20 @@ from django.contrib import messages
 from django.utils import timezone
 from datetime import timedelta
 from django.db.models import Q
+import logging
+import uuid
+from decimal import Decimal
+from django.contrib.auth import get_user_model
+from django.db import transaction
+from django.http import HttpResponseNotAllowed
+from django.views.decorators.http import require_POST
+User = get_user_model()
+logger = logging.getLogger(__name__)
+
+# # logger.info("Order retrieved: %s", order.pk)
+# logger.debug("Cart contains %s items", len(cart_items))
 
 # Create your views here.
-
 @login_required
 def home(request):
     products = Product.objects.all()
@@ -23,22 +34,34 @@ def home(request):
     ]
     return render(request,'ecommstore/templates/base.html',{'products': products,'images': images,'profilepicture':profilepicture})
 
+@require_POST
 def signup(request):
-    Name = request.POST.get("name")
-    Email = request.POST.get("email")
-    Pswd = request.POST.get("pswd")
-    print('Hello')
-    print('Name,Email,Pswd',Name+Email+Pswd)
-    existingUsers = User.objects.filter(username=Name)
-    if len(existingUsers)==0:
-        user = User.objects.create_user(username=Name,password=Pswd,email=Email)
-        user.save()
-        messages.success(request,'Your Account has been created successfully!')
-        return redirect('login')
-    else:
-        messages.success(request,'username already exists!')
-        print('username already exists!')    
-    return redirect('login')
+    username = request.POST.get("name", "").strip()
+    email = request.POST.get("email", "").strip()
+    password = request.POST.get("pswd", "")
+
+    if not username or not email or not password:
+        messages.error(
+            request,
+            "Username, email, and password are required.",
+        )
+        return redirect("login")
+
+    if User.objects.filter(username=username).exists():
+        messages.error(request, "Username already exists.")
+        return redirect("login")
+
+    User.objects.create_user(
+        username=username,
+        email=email,
+        password=password,
+    )
+
+    messages.success(
+        request,
+        "Your account has been created successfully!",
+    )
+    return redirect("login")
 
 def shop(request):
     userprofile = UserProfile.objects.filter(user=request.user)
@@ -52,19 +75,34 @@ def shop(request):
     ]
     return render(request,'ecommstore/templates/shop.html',{'profilepicture':profilepicture})
 
-def account(request):
-    userprofile = UserProfile.objects.filter(user=request.user)
-    profilepicture = ''
-    address = ''
-    if len(userprofile) > 0:
-        profilepicture = userprofile[0].profile_picture
-        address = userprofile[0].address
 
-    myOrders = {}
-    order = Order.objects.filter(user=request.user)
-    for i in range(0,len(order)):
-        myOrders[i] = order[i]
-    return render(request,'ecommstore/templates/account.html',{'profilepicture':profilepicture,'address':address,'myOrders':myOrders.items()})
+
+@login_required
+def account(request):
+    userprofile = UserProfile.objects.filter(
+        user=request.user
+    ).first()
+
+    profilepicture = (
+        userprofile.profile_picture
+        if userprofile and userprofile.profile_picture
+        else ""
+    )
+    address = userprofile.address if userprofile else ""
+
+    myOrders = Order.objects.filter(
+        user=request.user
+    ).order_by("-created_date")
+
+    return render(
+        request,
+        "ecommstore/templates/account.html",
+        {
+            "profilepicture": profilepicture,
+            "address": address,
+            "myOrders": myOrders,
+        },
+    )
 
 def logout(request):
     return render(request,'ecommstore/templates/base.html')
@@ -75,171 +113,298 @@ def login(request):
 #def signup(request):
     return render(request,'ecommstore/templates/base.html')
 
-def itemdetail(request,PCode):
-    product = Product.objects.filter(product_code=PCode).values()
-    userprofile = UserProfile.objects.filter(user=request.user)
-    profilepicture = ''
-    if len(userprofile) > 0:
-        print('profilepicture found!')
-        profilepicture = userprofile[0].profile_picture 
-    params = {
-        "product_code":product[0]["product_code"],
-        "name":product[0]["name"],
-        "image":product[0]["image"],
-        "description":product[0]["description"],
-        "price":product[0]["price"],
-        "instock":product[0]["stock"],
-        "specifications":product[0]["specification"],
-        "termsnconditions":product[0]["termsnconditions"],
-        "desc1":product[0]["desc1"],
-        "image1":product[0]["image1"],
-        "image2":product[0]["image2"],
-        "image3":product[0]["image3"],
-        "images":[product[0]["image"],product[0]["image1"],product[0]["image2"],product[0]["image3"]],
-        "profilepicture":profilepicture  
-    }   
-    return render(request,'ecommstore/templates/itemdetail.html',params)
+
+def itemdetail(request, PCode):
+    product = get_object_or_404(
+        Product,
+        product_code=PCode,
+    )
+
+    profile = None
+    if request.user.is_authenticated:
+        profile = UserProfile.objects.filter(
+            user=request.user
+        ).first()
+
+    return render(
+        request,
+        "ecommstore/templates/itemdetail.html",
+        {
+            "product": product,
+            "product_code": product.product_code,
+            "name": product.name,
+            "image": product.image,
+            "description": product.description,
+            "price": product.price,
+            "instock": product.stock,
+            "specifications": product.specification,
+            "termsnconditions": product.termsnconditions,
+            "desc1": product.desc1,
+            "image1": product.image1,
+            "image2": product.image2,
+            "image3": product.image3,
+            "images": [
+                product.image,
+                product.image1,
+                product.image2,
+                product.image3,
+            ],
+            "profilepicture": (
+                profile.profile_picture if profile else ""
+            ),
+        },
+    )
+
 
 @login_required
 def cart(request):
-    cart_items = {}
-    userprofile = UserProfile.objects.filter(user=request.user)
-    profilepicture = ''
-    if len(userprofile) > 0:
-        profilepicture = userprofile[0].profile_picture
-    i=0
-    final_cart_items = CartItem.objects.filter(user=request.user)
-    cartlength = len(final_cart_items)
-    total_amount = 0
-    for i in range(0,cartlength):
-        cart_items[i] = final_cart_items[i]
-        total_amount = final_cart_items[i].amount+total_amount
+    cart_items = list(
+        CartItem.objects
+        .filter(user=request.user)
+        .select_related("product", "variant")
+    )
 
-    print(cart_items)
-    return render(request,'ecommstore/templates/cartdetail.html',{'cart_items':cart_items.items(),'profilepicture':profilepicture,'total_amount':total_amount})
+    total_amount = Decimal("0")
 
+    for item in cart_items:
+        item.amount = item.quantity * item.price
+        total_amount += item.amount
+
+    profile = UserProfile.objects.filter(
+        user=request.user
+    ).first()
+
+    return render(
+        request,
+        "ecommstore/templates/cartdetail.html",
+        {
+            "cart_items": enumerate(cart_items),
+            "total_amount": total_amount,
+            "profilepicture": (
+                profile.profile_picture if profile else ""
+            ),
+        },
+    )
+
+@login_required
+@require_POST
 def resetcart(request):
-    cartItemsTodel = CartItem.objects.filter(user=request.user)
-    print('CartItem to delete for reset',cartItemsTodel)
-    cartItemsTodel.delete()
-    return render(request,'ecommstore/templates/cartdetail.html')
+    CartItem.objects.filter(user=request.user).delete()
 
-def addToCartAct(request,PCode):
-    productInstance = Product.objects.filter(product_code=PCode)
-    fetchedCartItem = CartItem.objects.filter(user=request.user,product=productInstance[0]) 
-    if(len(fetchedCartItem)>0):
-        print("Step 1")
-        #item is already into the cart
-        fetchedCartItem[0].quantity= fetchedCartItem[0].quantity + 1
-        fetchedCartItem[0].price = productInstance[0].price
-        fetchedCartItem[0].save()
+    messages.success(request, "Your cart has been cleared.")
+    return redirect("cart")
+
+
+
+@require_POST
+@login_required
+def addToCartAct(request, PCode):
+    product = get_object_or_404(
+        Product,
+        product_code=PCode,
+    )
+
+    item = CartItem.objects.filter(
+        user=request.user,
+        product=product,
+        variant__isnull=True,
+    ).first()
+
+    if item:
+        item.quantity += 1
+        item.price = product.price
+        item.save()
     else:
-        #new item added to the cart
-        print("Step 2")
-        cartProduct = CartItem(user=request.user,product=productInstance[0],price=productInstance[0].price)
-        cartProduct.save()
+        CartItem.objects.create(
+            user=request.user,
+            product=product,
+            quantity=1,
+            price=product.price,
+            related_order="",
+        )
 
-    cart_items = {}
-    i=0
-    final_cart_items = CartItem.objects.filter(user=request.user)
-    cartlength = len(final_cart_items)
+    return redirect("cart")
 
-    #accessing the user profile picture
-    userprofile = UserProfile.objects.filter(user=request.user)
-    profilepicture = ''
-    if len(userprofile) > 0:
-        print('profilepicture found!')
-        profilepicture = userprofile[0].profile_picture
-    else:
-        print("profilepicture not found!")
-    
-    #Calculating the total amount of the cart
-    total_amount=0
-    for i in range(0,cartlength):
-        cart_items[i] = final_cart_items[i]
-        total_amount = final_cart_items[i].amount+total_amount
 
-    print(cart_items)
-    return render(request,'ecommstore/templates/cartdetail.html',{'cart_items':cart_items.items(),'profilepicture':profilepicture,'total_amount':total_amount})
+@login_required
+@require_POST
+def delToCartAct(request, itemid):
+    item = get_object_or_404(
+        CartItem,
+        id=itemid,
+        user=request.user,
+    )
+    item.delete()
 
-def delToCartAct(request,itemid):
-    fetchedCartItem = CartItem.objects.filter(user=request.user,id=itemid)
-    print('CartItem to delete',fetchedCartItem)
-    fetchedCartItem.delete()
-    cart_items = {}
-    i=0
-    final_cart_items = CartItem.objects.filter(user=request.user)
-    cartlength = len(final_cart_items)
-    total_amount=0
-    for i in range(0,cartlength):
-        cart_items[i] = final_cart_items[i]
-        total_amount = final_cart_items[i].amount+total_amount
+    messages.success(request, "Item removed from your cart.")
+    return redirect("cart")
 
-    print(cart_items)
-    return render(request,'ecommstore/templates/cartdetail.html',{'cart_items':cart_items.items(),'total_amount':total_amount})
+def get_cart_context(user):
+    cart_items = list(
+        CartItem.objects
+        .filter(user=user)
+        .select_related("product")
+        .order_by("id")
+    )
 
+    total_amount = sum(
+        (item.amount for item in cart_items),
+        Decimal("0.00"),
+    )
+
+    profile = UserProfile.objects.filter(user=user).first()
+
+    return {
+        "cart_items": enumerate(cart_items),
+        "total_amount": total_amount,
+        "profilepicture": (
+            profile.profile_picture if profile else ""
+        ),
+    }
+
+@login_required
+@require_POST
 def order(request):
-    userCartItems = CartItem.objects.filter(user=request.user)  
-    allorders = Order.objects.filter()
-    neworderid = ''
-    if(len(allorders)>0):
-        neworderid = 'ODR'+str(len(allorders)+1)
-    else:
-        neworderid = 'ODR'+str(1)
-    #creating new order
-    order = Order(order_id=neworderid,user=request.user,status='created')
-    order.save()
-    #creating order line
-    for i in range(0,len(userCartItems)):
-        orderlineitem = OrderItem(
-                                order=order,
-                                product=userCartItems[i].product,
-                                quantity=userCartItems[i].quantity,
-                                unitprice=userCartItems[i].price,
-                                amount=userCartItems[i].price*userCartItems[i].quantity
-                            )
-        orderlineitem.save()
-    order_items = {}
-    orderitems = OrderItem.objects.filter(order_id=order.order_id)
-    orderamount = 0
-    for j in range(0,len(orderitems)):
-        order_items[j] = orderitems[j]
-        orderamount=orderamount+orderitems[j].amount
-    
-    #orderitem is the order
-    for orderitem in Order.objects.filter(order_id=order.order_id):
-        orderitem.amount = orderamount
-        orderitem.save()
+    cart_items = list(
+        CartItem.objects
+        .filter(user=request.user)
+        .select_related("product")
+        .order_by("id")
+    )
 
-    #userCartItems.delete()
-    for k in range(0,len(userCartItems)):
-        userCartItems[k].related_order = orderitem.order_id
-        userCartItems[k].save()
+    if not cart_items:
+        messages.warning(request, "Your cart is empty.")
+        return redirect("cart")
 
-    print('order_items',order_items)
-    return render(request,'ecommstore/templates/ordersummary.html',{'order_items':order_items.items(),'orderamount':orderamount,'order':orderitem.order_id})
-    
-def confirmorder(request,orderid):
+    with transaction.atomic():
+        order_id = f"ODR-{uuid.uuid4().hex.upper()}"
+
+        new_order = Order.objects.create(
+            order_id=order_id,
+            user=request.user,
+            status="created",
+        )
+
+        order_lines = []
+        order_amount = Decimal("0.00")
+
+        for item in cart_items:
+            unit_price = item.price
+            line_amount = unit_price * item.quantity
+
+            order_lines.append(
+                OrderItem(
+                    order=new_order,
+                    product=item.product,
+                    quantity=item.quantity,
+                    unitprice=unit_price,
+                    amount=line_amount,
+                )
+            )
+
+            order_amount += line_amount
+
+        OrderItem.objects.bulk_create(order_lines)
+
+        new_order.amount = order_amount
+        new_order.save(update_fields=["amount"])
+
+        CartItem.objects.filter(
+            user=request.user,
+            id__in=[item.id for item in cart_items],
+        ).update(related_order=order_id)
+
+    order_items = OrderItem.objects.filter(
+        order=new_order
+    ).select_related("product")
+
+    return render(
+        request,
+        "ecommstore/templates/ordersummary.html",
+        {
+            "order_items": enumerate(order_items),
+            "orderamount": order_amount,
+            "order": new_order.order_id,
+        },
+    )
+
+
+@login_required
+@require_POST
+def confirmorder(request, orderid):
+    with transaction.atomic():
+        order_obj = get_object_or_404(
+            Order.objects.select_for_update(),
+            order_id=orderid,
+            user=request.user,
+        )
+
+        if order_obj.status != "created":
+            messages.warning(
+                request,
+                "This order cannot be confirmed in its current state.",
+            )
+            return redirect("view_order", order_id=orderid)
+
+        order_obj.status = "placed"
+        order_obj.updated_date = timezone.now()
+        order_obj.save(
+            update_fields=["status", "updated_date"]
+        )
+
+        CartItem.objects.filter(
+            user=request.user,
+            related_order=orderid,
+        ).delete()
+
+    messages.success(request, "Order placed successfully!")
+    return redirect("account")
+
+@login_required
+@require_POST
+def cancelorder(request, orderid):
+    with transaction.atomic():
+        order = get_object_or_404(
+            Order.objects.select_for_update(),
+            order_id=orderid,
+            user=request.user,
+        )
+
+        # Prevent cancellation of already-finalized orders.
+        if order.status in ("cancelled", "placed"):
+            messages.error(
+                request,
+                "This order cannot be cancelled."
+            )
+            return redirect("vieworder", orderid=order.order_id)
+
+        # Allow cancellation within two hours of order creation.
+        elapsed = timezone.now() - order.created_date
+
+        if elapsed > timedelta(hours=2):
+            messages.error(
+                request,
+                "The cancellation window has expired."
+            )
+            return redirect("vieworder", orderid=order.order_id)
+
+        order.status = "cancelled"
+        order.updated_date = timezone.now()
+        order.save(update_fields=["status", "updated_date"])
+
+        # Remove cart rows associated with this order, if present.
+        CartItem.objects.filter(
+            user=request.user,
+            related_order=order.order_id,
+        ).delete()
+
+    messages.success(request, "Your order has been cancelled.")
+    return redirect("vieworder", orderid=order.order_id)
+
+def changeDeliveryAdd(request,orderid):
     order = Order.objects.filter(order_id=orderid)
     print('Order:',order)
-    for item in order:
-        item.status = 'placed'
-        item.updated_date = timezone.now()
-        item.save()
-    # order[0].status='placed'
-    # order[0].save()
-    cartitem = CartItem.objects.filter(related_order=orderid)
-    print('CartItems:',cartitem)
-    cartitem.delete()
-    return HttpResponse('Order placed Successfully!')
-
-def cancelorder(request,orderid):
-    order = Order.objects.filter(order_id=orderid)
-    print('Order:',order)
-    for item in order:
-        item.status = 'cancelled'
-        item.updated_date = timezone.now()
-        item.save()
+    print("Delivery address chnaged")
     return cart(request)
 
 def vieworder(request,orderid):
@@ -292,4 +457,45 @@ def search_products(request):
     else:
         results = Product.objects.filter()
         return render(request,'ecommstore/templates/base.html',{'products': results,'images': images,'profilepicture':profilepicture})
-    
+
+def updateMyInfo(request):
+    username = request.POST.get("Username")
+    email = request.POST.get("Email")
+    firstName= request.POST.get("FirstName")
+    lastName= request.POST.get("LastName")
+    address= request.POST.get("Address")
+    profilepic= request.POST.get("profilepic") 
+
+    #user = User.objects.filter(username=username)
+    user = get_object_or_404(User, username=username)
+    print("User:",user)
+    user.email = email
+    user.first_name = firstName
+    user.last_name = lastName
+    user.save()
+    userprofile = get_object_or_404(UserProfile, user=user)
+    userprofile.address = address
+    if(profilepic!=None):
+        userprofile.profile_picture = profilepic
+        print(userprofile.profile_picture)
+    userprofile.save()
+    print(userprofile)
+    messages.success(request,"Your info updated successfully!")
+    # return HttpResponse("Updated successfully")
+    return redirect("account")
+
+@login_required
+def view_order(request, order_id):
+    order_obj = get_object_or_404(
+        Order.objects.prefetch_related(
+            "orderitem_set__product"
+        ),
+        order_id=order_id,
+        user=request.user,
+    )
+
+    return render(
+        request,
+        "ecommstore/templates/orderdetails.html",
+        {"order": order_obj},
+    )

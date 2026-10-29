@@ -1,216 +1,436 @@
 {% extends 'base.html' %}
-{% csrf_token %}
-{% block title %}Item Details{% endblock %}
+{% load static %}
+
+{% block title %}{{ name }} | ShopMate{% endblock %}
+
 {% block css %}
-/* Reset and base */
-* {
+/* ShopMate product details page */
+.product-detail-page {
+    --detail-ink: #171717;
+    --detail-muted: #6b7280;
+    --detail-line: #e8e8e8;
+    --detail-soft: #f7f7f5;
+    --detail-accent: #d8ff3e;
+    width: 100%;
+    padding: 28px 0 60px;
+    color: var(--detail-ink);
+    background: #fff;
+}
+
+.product-detail-page,
+.product-detail-page * {
     box-sizing: border-box;
 }
-body {
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #e8f8fd;
-    color: #333;
+
+.product-detail-page .detail-container {
+    width: min(1180px, calc(100% - 48px));
+    margin: 0 auto;
+    padding: 0;
 }
-.container {
-    max-width: 900px;
-    margin: 2rem auto;
-    background: #6cec77;
-    <!-- background-color: #eff8f8; -->
-    border-radius: 8px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-    padding: 2rem;
-}
-.item-header {
-    background-color:#d3ebec;
+
+.product-detail-page .breadcrumbs {
     display: flex;
     flex-wrap: wrap;
-    gap: 2rem;
     align-items: center;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 1.5rem;
-    margin-bottom: 2rem;
+    gap: 8px;
+    margin: 0 0 22px;
+    color: var(--detail-muted);
+    font-size: .88rem;
 }
-.item-image {
-    background-color: red;
-    margin-left:10px;
-    margin-top: 15px;
-    margin-bottom: 15px;
-    flex: 1 1 250px;
-    max-width: 300px;
-    border-radius: 8px;
+
+.product-detail-page .breadcrumbs a {
+    color: var(--detail-muted);
+    text-decoration: none;
+}
+.product-detail-page .breadcrumbs a:hover {
+    color: var(--detail-ink);
+}
+
+.product-detail-page .product-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr);
+    gap: clamp(28px, 5vw, 68px);
+    align-items: start;
+}
+
+.product-detail-page .gallery {
+    min-width: 0;
+}
+
+.product-detail-page .gallery-main {
+    position: relative;
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    background: var(--detail-soft);
+    border: 1px solid #ededeb;
+    border-radius: 20px;
 }
-.item-image img {
+
+.product-detail-page #productGallery,
+.product-detail-page #productGallery .carousel-inner,
+.product-detail-page #productGallery .carousel-item {
     width: 100%;
-    height: auto;
+}
+
+.product-detail-page #productGallery .carousel-inner {
+    aspect-ratio: 4 / 4.5;
+    background: var(--detail-soft);
+}
+
+.product-detail-page #productGallery .carousel-item {
+    height: 100%;
+    text-align: center;
+}
+
+.product-detail-page #productGallery .carousel-item img {
     display: block;
-    object-fit: cover;
-}
-.item-info {
-    flex: 2 1 400px;
-}
-.item-name {
-    font-size: 2.4rem;
-    font-weight: 700;
-    margin: 0 0 0.5rem 0;
-    color: #222;
-}
-.item-description {
-    font-size: 1.1rem;
-    color: #555;
-    line-height: 1.5;
-}
-.item-price {
-    margin-top: 1rem;
-    font-size: 1.6rem;
-    font-weight: 600;
-    color: #007BFF;
-}
-.add-cart-button {
-background-color: #4CAF50; /* Green */
-color: white;
-padding: 10px 20px;
-border: none;
-border-radius: 5px;
-cursor: pointer;
-font-size: 16px;
-transition: background-color 0.3s ease;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 4 / 4.5;
+    object-fit: contain;
+    padding: clamp(12px, 2vw, 28px);
 }
 
-.add-cart-button:hover {
-    background-color: #45a049; /* Darker green on hover */
+.product-detail-page .gallery-control {
+    width: 42px;
+    height: 42px;
+    top: 50%;
+    bottom: auto;
+    margin: 0 12px;
+    transform: translateY(-50%);
+    background: rgba(23, 23, 23, .72);
+    border-radius: 50%;
+    opacity: .9;
+}
+.product-detail-page .gallery-control:hover {
+    background: #171717;
+    opacity: 1;
+}
+.product-detail-page .gallery-control .carousel-control-prev-icon,
+.product-detail-page .gallery-control .carousel-control-next-icon {
+    width: 17px;
+    height: 17px;
 }
 
-.add-cart-button:active {
-    background-color: #3e8e41; /* Even darker when clicked */
+.product-detail-page .gallery-count {
+    margin: 10px 2px 0;
+    color: var(--detail-muted);
+    font-size: .82rem;
 }
-.specifications {
-    margin-top: 2rem;
+
+.product-detail-page .product-info {
+    min-width: 0;
+    padding: 8px 0 0;
 }
-.specifications h2 {
+
+.product-detail-page .product-eyebrow {
+    margin: 0 0 12px;
+    color: #667514;
+    font-size: .76rem;
+    font-weight: 800;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+}
+
+.product-detail-page .item-name {
+    margin: 0 0 14px;
+    color: var(--detail-ink);
+    font-family: "Manrope", "Segoe UI", sans-serif;
+    font-size: clamp(2rem, 4vw, 3.1rem);
+    font-weight: 800;
+    line-height: 1.12;
+    letter-spacing: -.055em;
+    overflow-wrap: anywhere;
+}
+
+.product-detail-page .item-description {
+    margin: 0;
+    color: #626262;
+    font-size: 1rem;
+    line-height: 1.8;
+    white-space: pre-line;
+}
+
+.product-detail-page .price-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px;
+    margin: 22px 0 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--detail-line);
+}
+
+.product-detail-page .item-price {
+    margin: 0;
+    color: var(--detail-ink);
     font-size: 1.8rem;
-    border-bottom: 2px solid #00060c;
-    padding-bottom: 0.4rem;
-    margin-bottom: 1rem;
-    color: #00060c;
+    font-weight: 800;
+    letter-spacing: -.04em;
 }
-table.spec-table {
+
+.product-detail-page .price-note {
+    color: var(--detail-muted);
+    font-size: .85rem;
+}
+
+.product-detail-page .add-cart-button {
+    width: 100%;
+    min-height: 52px;
+    padding: 14px 22px;
+    color: #fff;
+    background: var(--detail-ink);
+    border: 1px solid var(--detail-ink);
+    border-radius: 999px;
+    font-size: .95rem;
+    font-weight: 800;
+    letter-spacing: .02em;
+    cursor: pointer;
+    transition: background .2s ease, color .2s ease, transform .2s ease;
+}
+.product-detail-page .add-cart-button:hover {
+    color: var(--detail-ink);
+    background: var(--detail-accent);
+    border-color: var(--detail-accent);
+    transform: translateY(-1px);
+}
+.product-detail-page .add-cart-button:focus-visible {
+    outline: 3px solid #9eb52b;
+    outline-offset: 3px;
+}
+
+.product-detail-page .purchase-note {
+    margin: 13px 0 0;
+    color: var(--detail-muted);
+    font-size: .83rem;
+    text-align: center;
+}
+
+.product-detail-page .details-panel {
+    margin-top: 42px;
+    padding: clamp(20px, 3vw, 32px);
+    background: #fff;
+    border: 1px solid var(--detail-line);
+    border-radius: 18px;
+}
+
+.product-detail-page .details-panel + .details-panel {
+    margin-top: 20px;
+}
+
+.product-detail-page .details-heading {
+    margin: 0 0 18px;
+    padding-bottom: 14px;
+    color: var(--detail-ink);
+    border-bottom: 1px solid var(--detail-line);
+    font-family: "Manrope", "Segoe UI", sans-serif;
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -.035em;
+}
+
+.product-detail-page .spec-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 1rem;
-    font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    font-size: .94rem;
 }
-table.spec-table th, table.spec-table td {
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid #ddd;
-    text-align: left;
-}
-table.spec-table th {
-    background: #f0f8ff;
-    color: #0056b3;
-    width: 35%;
-    font-weight: 600;
-}
-@media (max-width: 600px) {
-    .item-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    .item-image {
-        max-width: 100%;
-    }
-    .item-info {
-        flex: 1 1 100%;
-    }
-}
-#carouselExample{
-            height: 350px;
-            background-color: white;
-            margin-top: 15px;
-            margin-bottom: 15px;
-        }
 
+.product-detail-page .spec-table th,
+.product-detail-page .spec-table td {
+    padding: 14px 12px;
+    border-bottom: 1px solid #eeeeec;
+    text-align: left;
+    vertical-align: top;
+    overflow-wrap: anywhere;
+}
+
+.product-detail-page .spec-table tr:last-child th,
+.product-detail-page .spec-table tr:last-child td {
+    border-bottom: 0;
+}
+
+.product-detail-page .spec-table th {
+    width: 36%;
+    color: #555;
+    background: #fafaf8;
+    font-weight: 700;
+}
+
+.product-detail-page .empty-note {
+    margin: 0;
+    color: var(--detail-muted);
+    font-size: .93rem;
+}
+
+@media (max-width: 800px) {
+    .product-detail-page {
+        padding-top: 20px;
+    }
+    .product-detail-page .detail-container {
+        width: min(100% - 32px, 620px);
+    }
+    .product-detail-page .product-layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 26px;
+    }
+    .product-detail-page .product-info {
+        padding-top: 0;
+    }
+    .product-detail-page .item-name {
+        font-size: clamp(1.9rem, 7vw, 2.6rem);
+    }
+    .product-detail-page .details-panel {
+        margin-top: 30px;
+    }
+}
+
+@media (max-width: 480px) {
+    .product-detail-page .detail-container {
+        width: calc(100% - 24px);
+    }
+    .product-detail-page .breadcrumbs {
+        margin-bottom: 15px;
+        font-size: .8rem;
+    }
+    .product-detail-page .gallery-main {
+        border-radius: 14px;
+    }
+    .product-detail-page #productGallery .carousel-inner {
+        aspect-ratio: 1 / 1;
+    }
+    .product-detail-page #productGallery .carousel-item img {
+        aspect-ratio: 1 / 1;
+        padding: 10px;
+    }
+    .product-detail-page .item-description {
+        font-size: .94rem;
+    }
+    .product-detail-page .item-price {
+        font-size: 1.6rem;
+    }
+    .product-detail-page .details-panel {
+        padding: 17px 13px;
+        border-radius: 14px;
+    }
+    .product-detail-page .spec-table {
+        font-size: .86rem;
+    }
+    .product-detail-page .spec-table th,
+    .product-detail-page .spec-table td {
+        padding: 11px 8px;
+    }
+    .product-detail-page .spec-table th {
+        width: 40%;
+    }
+}
 {% endblock %}
 
 {% block body %}
-    <div class="Matter">
-        <div class="container" role="main">
-            <section class="item-header" aria-label="Item overview">
-                <div class="item-image">         
-                    <!-- <section class="carousel" style="margin-bottom:40px;"> -->
-                        <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
+<div class="product-detail-page">
+    <div class="detail-container">
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+            <a href="{% url 'home' %}">Home</a>
+            <span aria-hidden="true">/</span>
+            <a href="{% url 'shop' %}">Shop</a>
+            <span aria-hidden="true">/</span>
+            <span aria-current="page">{{ name }}</span>
+        </nav>
+
+        <section class="product-layout" aria-label="Product overview">
+            <div class="gallery">
+                <div class="gallery-main">
+                    {% if images %}
+                    <div id="productGallery" class="carousel slide" data-bs-interval="false">
                         <div class="carousel-inner">
                             {% for image in images %}
                             <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                            <img src="/{{image}}/" class="d-block w-100" alt="Slide {{ forloop.counter }}">
+                                <img src="/{{ image }}/" alt="{{ name }} — image {{ forloop.counter }}" {% if not forloop.first %}loading="lazy"{% endif %}>
                             </div>
                             {% endfor %}
                         </div>
-                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
+
+                        {% if images|length > 1 %}
+                        <button class="carousel-control-prev gallery-control" type="button"
+                                data-bs-target="#productGallery" data-bs-slide="prev"
+                                aria-label="Previous product image">
                             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                            <span class="visually-hidden">Previous</span>
                         </button>
-                        <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
+                        <button class="carousel-control-next gallery-control" type="button"
+                                data-bs-target="#productGallery" data-bs-slide="next"
+                                aria-label="Next product image">
                             <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                            <span class="visually-hidden">Next</span>
                         </button>
-                        </div>
-                    <!-- </section> -->
-                    <!-- {% if name %}
-                        <img src="/{{image}}/" alt="Image of {{ name }}" /> -->
+                        {% endif %}
+                    </div>
                     {% else %}
-                        <img src="https://via.placeholder.com/300x300?text=No+Image" alt="No image available" />
+                    <div class="gallery-main">
+                        <img src="https://placehold.co/700x800/f7f7f5/777?text=No+Product+Image"
+                             alt="No image available for {{ name }}"
+                             style="display:block;width:100%;aspect-ratio:4/4.5;object-fit:contain;padding:24px;">
+                    </div>
                     {% endif %}
                 </div>
-                <div class="item-info">
-                    <form method="post" action="{% url 'addToCartAct' product_code %}">
-                    {% csrf_token %}
-                    <h1 class="item-name">{{ name }}</h1>
-                    <p class="item-description">{{ description }}</p>
-                    <p class="item-price">${{ price }}</p>
-                    <button class="add-cart-button">ADD TO CART</button>
-                    </form>
-                </div>
-            </section>
-            
-            {% if specifications %}
-                <section class="specifications" aria-label="Item specifications">
-                    <h2>Specifications</h2>
-                    <table class="spec-table">
-                        <tbody>
-                        {% for key, value in specifications.items %}
-                            <tr>
-                                <th>{{ key }}</th>
-                                <td>{{ value }}</td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                </section>
-            {% else %}
-                <p><em>No specifications available.</em></p>
-            {% endif %}
+                {% if images|length > 1 %}
+                <p class="gallery-count">Use the arrows to view more product images.</p>
+                {% endif %}
+            </div>
 
-            {% if termsnconditions %}
-                <section class="specifications" aria-label="Terms and conditions">
-                    <h2>Terms and conditions</h2>
-                    <table class="spec-table">
-                        <tbody>
-                        {% for key, value in termsnconditions.items %}
-                            <tr>
-                                <th>{{ key }}</th>
-                                <td>{{ value }}</td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                </section>
-            {% else %}
-                <p><em>No terms and conditions available.</em></p>
-            {% endif %}
-        </div>
-    
+            <div class="product-info">
+                <p class="product-eyebrow">ShopMate Collection</p>
+                <h1 class="item-name">{{ name }}</h1>
+
+                {% if description %}
+                <p class="item-description">{{ description }}</p>
+                {% endif %}
+
+                <div class="price-row">
+                    <p class="item-price">₹{{ price }}</p>
+                    <span class="price-note">Price shown in INR</span>
+                </div>
+
+                <form method="post" action="{% url 'addToCartAct' product_code %}">
+                    {% csrf_token %}
+                    <button class="add-cart-button" type="submit">ADD TO CART</button>
+                </form>
+                <p class="purchase-note">A great choice for your everyday style.</p>
+            </div>
+        </section>
+
+        {% if specifications %}
+        <section class="details-panel" aria-label="Item specifications">
+            <h2 class="details-heading">Product specifications</h2>
+            <table class="spec-table">
+                <tbody>
+                    {% for key, value in specifications.items %}
+                    <tr>
+                        <th scope="row">{{ key }}</th>
+                        <td>{{ value }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        {% endif %}
+
+        {% if termsnconditions %}
+        <section class="details-panel" aria-label="Terms and conditions">
+            <h2 class="details-heading">Terms &amp; conditions</h2>
+            <table class="spec-table">
+                <tbody>
+                    {% for key, value in termsnconditions.items %}
+                    <tr>
+                        <th scope="row">{{ key }}</th>
+                        <td>{{ value }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        {% endif %}
     </div>
+</div>
 {% endblock %}
+'''
+
+out = Path("/mnt/data/itemdetail_redesigned.html")
+out.write_text(template, encoding="utf-8")
+print(f"Created {out} ({out.stat().st_size} bytes)")

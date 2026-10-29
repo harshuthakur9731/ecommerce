@@ -8,16 +8,16 @@ class Product(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField()
     category = models.CharField(max_length=30)
-    image = models.ImageField(upload_to = 'static', blank=True, null=True)
+    image = models.ImageField(upload_to="products/",blank=True,null=True,)
     price = models.DecimalField(max_digits=12,decimal_places=2)
     stock = models.IntegerField()
     specification = models.JSONField(null=True)
     termsnconditions = models.JSONField(null=True)
     created_date = models.DateTimeField(auto_now_add=True)
     desc1 = models.TextField(null=True)
-    image1 = models.ImageField(upload_to = 'static', blank=True, null=True)
-    image2 = models.ImageField(upload_to = 'static', blank=True, null=True)
-    image3 = models.ImageField(upload_to = 'static', blank=True, null=True)
+    image1 = models.ImageField(upload_to="products/",blank=True,null=True,)
+    image2 = models.ImageField(upload_to="products/",blank=True,null=True,)
+    image3 = models.ImageField(upload_to="products/",blank=True,null=True,)
 
     def __str__(self):
         return self.name
@@ -79,7 +79,7 @@ class CartItem(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE)
     address = models.TextField()
-    profile_picture = models.ImageField(upload_to='static', blank=True, null=True)
+    profile_picture = models.ImageField(upload_to="profile_pictures/",blank=True,null=True,)
 
     def __str__(self):
         return self.user.username

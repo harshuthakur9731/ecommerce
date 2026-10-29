@@ -1,329 +1,473 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Sofia">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Sofia&effect=neon|outline|emboss|shadow-multiple">
-    <title>{% block title %}My eCommerce Site{% endblock %}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#ffffff">
+    <title>{% block title %}ShopMate | Everyday Style{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
-        {% block css %}
-        
-        {% endblock %}
-        /* Reset & Base Styles */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        :root {
+            --sm-ink: #171717;
+            --sm-muted: #6b7280;
+            --sm-line: #e8e8e8;
+            --sm-soft: #f7f7f5;
+            --sm-accent: #d8ff3e;
+            --sm-radius: 16px;
+            --sm-shadow: 0 12px 35px rgba(0, 0, 0, .07);
         }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
+
         body {
-            background-color: #f5f7fa;
-            color: #333;
-            line-height: 1.6;
+            margin: 0;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-        }
-        a {
-            text-decoration: none;
-            color: #007bff;
-            transition: color 0.3s ease;
-        }
-        a:hover {
-            color: #0056b3;
+            background: #fff;
+            color: var(--sm-ink);
+            font-family: "DM Sans", sans-serif;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Navigation */
-        nav {
-            background-color: #fff;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        img { max-width: 100%; }
+        a { color: inherit; text-decoration: none; }
+        button, input { font: inherit; }
+        button, a { -webkit-tap-highlight-color: transparent; }
+
+        .site-header {
             position: sticky;
             top: 0;
             z-index: 1000;
-        }
-        nav .logo {
-            font-weight: 700;
-            font-size: 1.5rem;
-            color: #007bff;
-        }
-        nav ul {
-            list-style: none;
-            display: flex;
-            gap: 1.5rem;
-        }
-        nav ul li {
-            font-weight: 600;
+            background: rgba(255,255,255,.96);
+            border-bottom: 1px solid var(--sm-line);
+            backdrop-filter: blur(14px);
         }
 
-        /* Hero Banner */
-        .hero {
-            background: url('https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=1470&q=80') no-repeat center center/cover;
-            height: 180px;
+        .announcement {
+            padding: 7px 16px;
+            background: var(--sm-ink);
+            color: #fff;
+            text-align: center;
+            font-size: .76rem;
+            letter-spacing: .04em;
+        }
+
+        .nav-shell {
+            width: min(1320px, 100%);
+            min-height: 78px;
+            margin: 0 auto;
+            padding: 14px 28px;
             display: flex;
-            justify-content: center;
             align-items: center;
-            color: white;
-            text-shadow: 1px 1px 5px rgba(0,0,0,0.7);
-            margin-bottom: 2rem;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .brand {
+            flex-shrink: 0;
+            font-family: "Manrope", sans-serif;
+            font-size: 1.65rem;
+            font-weight: 800;
+            letter-spacing: -.07em;
+        }
+        .brand span { color: #7a8d16; }
+
+        .desktop-nav {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        .desktop-nav a {
+            color: #444;
+            font-size: .91rem;
+            font-weight: 600;
+            transition: color .2s ease;
+        }
+        .desktop-nav a:hover { color: #82951c; }
+
+        .header-search {
+            flex: 1;
+            max-width: 340px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .search_input {
+            width: 100%;
+            min-width: 0;
+            padding: 10px 14px;
+            color: var(--sm-ink);
+            background: #f6f6f4;
+            border: 1px solid transparent;
+            border-radius: 999px;
+            outline: none;
+            transition: border-color .2s, background .2s;
+        }
+        .search_input:focus { background: #fff; border-color: #aaa; }
+        .search_btn {
+            padding: 10px 16px;
+            color: #fff;
+            background: var(--sm-ink);
+            border: 1px solid var(--sm-ink);
+            border-radius: 999px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background .2s, transform .2s;
+        }
+        .search_btn:hover { background: #383838; transform: translateY(-1px); }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 15px;
+            flex-shrink: 0;
+        }
+        .header-actions a {
+            font-size: .88rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .header-actions a:hover { color: #82951c; }
+
+        .openbtn {
+            width: 42px;
+            height: 42px;
+            padding: 2px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #f4f4f2;
+            border: 1px solid var(--sm-line);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        #pic { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+        .page-shell { flex: 1; width: 100%; }
+        .content-shell { width: min(1320px, 100%); margin: 0 auto; padding: 0 28px 56px; }
+
+        .hero {
+            min-height: 220px;
+            margin: 28px auto 34px;
+            padding: 36px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #fff;
+            background:
+                linear-gradient(90deg, rgba(15,15,15,.72), rgba(15,15,15,.15)),
+                url("https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=1800&q=85") center 45% / cover;
+            border-radius: 22px;
+            overflow: hidden;
         }
         .hero h1 {
-            font-size: 3rem;
-            font-weight: 900;
-            background-color: rgba(0, 123, 255, 0.6);
-            padding: 1rem 2rem;
-            border-radius: 10px;
-            max-width: 90%;
-            text-align: center;
+            max-width: 760px;
+            margin: 0;
+            font-family: "Manrope", sans-serif;
+            font-size: clamp(2rem, 4.4vw, 4rem);
+            font-weight: 800;
+            line-height: 1.08;
+            letter-spacing: -.055em;
+            text-wrap: balance;
         }
 
-        /* Main Content */
-        main {
-            flex: 1;
-            width: 90%;
-            max-width: 1200px;
-            margin: 0 auto 2rem auto;
-            background-color: #6cec77;
-            padding-bottom:20px;
-            
+        .carousel { margin: 0 0 44px; }
+        .carousel-inner {
+            height: clamp(220px, 35vw, 440px);
+            overflow: hidden;
+            background: var(--sm-soft);
+            border-radius: 20px;
         }
+        .carousel-item, .carousel-item img { height: 100%; }
+        .carousel-item img { width: 100%; object-fit: cover; object-position: center; }
+        .carousel-control-prev, .carousel-control-next { width: 9%; }
 
-        .Matter {
-            background-color: #B9EBE4;
+        .section-heading {
+            margin: 0 0 20px;
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 16px;
         }
+        .section-heading h2 {
+            margin: 0;
+            font-family: "Manrope", sans-serif;
+            font-size: clamp(1.5rem, 2.5vw, 2.2rem);
+            font-weight: 800;
+            letter-spacing: -.045em;
+        }
+        .section-heading p { margin: 5px 0 0; color: var(--sm-muted); font-size: .94rem; }
 
-        /* Products Grid */
         .products {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 1.5rem;
-            margin-left: 10px;
-            margin-right: 10px;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 26px 18px;
         }
         .product-card {
-            background-color: #fff;
-            max-width: 300px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            padding: 1rem;
+            min-width: 0;
+            padding: 0;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            transition: transform 0.3s ease;
-            margin-top: 20px;
-            
+            background: #fff;
+            border: 1px solid #ededeb;
+            border-radius: var(--sm-radius);
+            overflow: hidden;
+            transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
         }
         .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+            transform: translateY(-4px);
+            border-color: #deded9;
+            box-shadow: var(--sm-shadow);
+        }
+        .product-card form { height: 100%; display: flex; flex-direction: column; }
+        .product-image-link {
+            display: block;
+            overflow: hidden;
+            background: #f5f5f2;
         }
         .product-image {
-            height: 180px;
+            display: block;
             width: 100%;
-            object-fit: cover;
-            border-radius: 8px;
-            margin-bottom: 1rem;
+            height: 280px;
+            margin: 0;
+            object-fit: contain;
+            padding: 12px;
+            transition: transform .35s ease;
         }
+        .product-card:hover .product-image { transform: scale(1.04); }
+        .product-info { padding: 15px 15px 17px; display: flex; flex: 1; flex-direction: column; align-items: flex-start; }
         .product-title {
-            font-size: 1.1rem;
+            margin: 0 0 7px;
+            color: var(--sm-ink);
+            font-size: .98rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
-            color: #222;
+            line-height: 1.4;
         }
-        .product-price {
-            font-weight: 600;
-            color: #007bff;
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
-        }
+        .product-price { margin: 0 0 14px; color: var(--sm-ink); font-size: 1.05rem; font-weight: 800; }
         .btn-add-cart {
-            background-color: #007bff;
-            border: none;
-            color: white;
-            padding: 0.6rem 1rem;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background-color 0.3s ease;
-            align-self: flex-start;
-        }
-        .btn-add-cart:hover {
-            background-color: #0056b3;
-        }
-        .search_btn{
-            background-color: #a1cbf5;
-            padding: 3px;
-            width: 87px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 600;
-            border: 2px solid black;
-            transition: background-color 0.3s ease;
-            
-        }
-        .search_input{
-            background-color: #a1cbf5;
-            border-radius: 5px;
-            padding: 3px;
-            width: 350px;
-            margin-left: 300px;
-            
-            font-weight: 400;
-            padding-left: 10px;
-            border: 1px solid black;
-
-        }
-
-        /* Footer */
-        footer {
-            background-color: #222;
-            color: #eee;
-            text-align: center;
-            padding: 1rem 2rem;
-            font-size: 0.9rem;
-            position: relative;
             width: 100%;
+            margin-top: auto;
+            padding: 11px 14px;
+            color: #fff;
+            background: var(--sm-ink);
+            border: 1px solid var(--sm-ink);
+            border-radius: 999px;
+            font-size: .9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: color .2s, background .2s;
+        }
+        .btn-add-cart:hover { color: var(--sm-ink); background: var(--sm-accent); border-color: var(--sm-accent); }
+
+        .Matter { background: #fff; }
+        main { width: 100%; max-width: none; margin: 0 auto 2rem; padding: 0; background: transparent; }
+        .search_bar { min-width: 0; }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            z-index: 1200;
+            width: 0;
+            height: 100%;
+            overflow-x: hidden;
+            color: #fff;
+            background: #171717;
+            opacity: .98;
+            transition: width .3s ease;
         }
 
-        /* Responsive */
-        @media (max-width: 600px) {
-            nav ul {
-                gap: 1rem;
-            }
-            .hero h1 {
-                font-size: 2rem;
-                padding: 0.5rem 1rem;
+        footer {
+            margin-top: auto;
+            padding: 34px 24px;
+            color: #dedede;
+            background: #171717;
+            text-align: center;
+            font-size: .88rem;
+        }
+        footer p { margin: 0; }
+
+        @media (max-width: 1100px) {
+            .nav-shell { flex-wrap: wrap; gap: 14px 20px; }
+            .header-search { order: 3; flex-basis: 100%; max-width: none; }
+            .desktop-nav { gap: 16px; }
+            .products { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .product-image { height: 260px; }
+        }
+        @media (max-width: 760px) {
+            .announcement { font-size: .7rem; }
+            .nav-shell { padding: 13px 16px; gap: 13px; }
+            .brand { font-size: 1.45rem; }
+            .desktop-nav { order: 4; flex-basis: 100%; justify-content: space-between; gap: 10px; }
+            .desktop-nav a { font-size: .84rem; }
+            .header-actions { gap: 11px; }
+            .header-actions a { font-size: .82rem; }
+            .content-shell { padding: 0 16px 38px; }
+            .hero { min-height: 190px; margin: 18px auto 24px; padding: 28px 18px; border-radius: 15px; }
+            .carousel { margin-bottom: 32px; }
+            .carousel-inner { border-radius: 14px; }
+            .products { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px 11px; }
+            .product-image { height: clamp(155px, 48vw, 245px); padding: 7px; }
+            .product-info { padding: 12px 10px 13px; }
+            .product-title { font-size: .88rem; }
+            .product-price { font-size: .98rem; }
+            .btn-add-cart { padding: 10px 8px; font-size: .82rem; }
+        }
+        @media (max-width: 390px) {
+            .header-actions { gap: 8px; }
+            .header-actions a { font-size: .76rem; }
+            .desktop-nav { gap: 7px; }
+            .desktop-nav a { font-size: .78rem; }
+            .search_btn { padding: 10px 12px; }
+        }
+        .carousel-inner {
+            aspect-ratio: 16 / 9;
+            height: auto;
+            overflow: hidden;
+            border-radius: 20px;
+        }
+        .carousel-item {
+            height: 100%;
+            aspect-ratio: 16 / 9;
+        }
+        .carousel-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+        @media (max-width: 768px) {
+            .carousel-inner,
+            .carousel-item {
+                aspect-ratio: 4 / 3;
             }
         }
-        .carousel-inner{
-            height: 500px;
-        }
-        .openbtn{
-                border:2px solid black;
-                border-radius: 50%;
-                cursor:pointer;
-                transition: 0.3s;
-                width: 40px;       /* Width of the circle */
-                height: 40px; 
-                      }
-              .openbtn:hover{
-                             background-color:#c2dbff 
-                            }
-        .sidebar{
-                height:100%;
-                width:0;
-                position: fixed;
-                background-color:#0C040B;
-                color:white;
-                
-                font-size:24px;
-                overflow-x: hidden;
-                transition: 0.4s;
-                opacity:0.9;
-            }
-            #pic{
-                font-size:9px;
-                border-radius: 50%;
-            }
+        {% block css %}{% endblock %}
     </style>
-    <!-- In the <head> section -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <nav>
-        <div class="logo">
-            <a href="{% url 'home' %}">ShopMate</a>
-        </div>
-        <div class="search_bar">
-            <form method="GET" action="{% url 'search_products' %}">
-                <input class="search_input" type="text" name="q" value="{{query}}" default="" placeholder="Search Your Products...">
-                <button class="search_btn" >Search</button>
-            </form>
-        </div>
-        <div id="main">
-            <ul>
+    <header class="site-header">
+        <div class="announcement">Fresh styles. Everyday essentials. Discover your next favourite.</div>
+        <div class="nav-shell">
+            <a class="brand" href="{% url 'home' %}" aria-label="ShopMate home">Shop<span>Mate.</span></a>
+
+            <ul class="desktop-nav">
                 <li><a href="{% url 'home' %}">Home</a></li>
                 <li><a href="{% url 'shop' %}">Shop</a></li>
                 <li><a href="{% url 'cart' %}">Cart</a></li>
-                <li><a href="/admin">Admin</a></li>
+                 <li><a href="/admin/">Admin</a></li>
                 {% if user.is_authenticated %}
                     <li><a href="{% url 'account' %}">My Account</a></li>
-                    <li><a href="{% url 'logout' %}">Logout</a></li>
-                    <li><button class="openbtn" onclick="openNav()"><img id="pic" src="{{profilepicture}}" style="width: 35px; height: 35px;"/></button></li>  
-                {% else %}
-                    <li><a href="{% url 'login' %}">Login</a></li>
-                    <li><a href="{% url 'signup' %}">Sign Up</a></li>
                 {% endif %}
             </ul>
+
+            <div class="header-search">
+                <form method="GET" action="{% url 'search_products' %}" class="d-flex gap-2 w-100">
+                    <input class="search_input" type="search" name="q" value="{{ query|default:'' }}" placeholder="Search products..." aria-label="Search products">
+                    <button class="search_btn" type="submit">Search</button>
+                </form>
+            </div>
+
+            <div class="header-actions">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'logout' %}">Logout</a>
+                    <button class="openbtn" type="button" onclick="openNav()" aria-label="Open profile menu">
+                        <img id="pic" src="{% if profilepicture %}{{ profilepicture.url }}{% else %}{% static 'default-profile.png' %}{% endif %}" alt="Profile">
+                    </button>
+                {% else %}
+                    <a href="{% url 'login' %}">Login</a>
+                    <a href="{% url 'signup' %}">Sign up</a>
+                {% endif %}
+            </div>
         </div>
-    </nav>
+    </header>
 
     {% block body %}
-    <div class="Matter">
-        <section class="hero">
-            <h1>Discover Amazing Products At Great Prices</h1>
-        </section>
+    <div class="Matter page-shell">
+        <div class="content-shell">
+            <section class="hero">
+                <h1>Find Your Everyday Style.</h1>
+            </section>
 
-        <main>
-           {% block content %}
-           {% block crousl %}
-                <section class="carousel" style="margin-bottom:40px;">
+            <main>
+                {% block content %}
+                {% block crousl %}
+                {% if images %}
+                <section class="carousel" aria-label="Featured promotions">
                     <div id="carouselExample" class="carousel slide" data-bs-ride="carousel">
-                    <div class="carousel-inner">
-                        {% for image in images %}
-                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                        <img src="{{image}}" class="d-block w-100" alt="Slide {{ forloop.counter }}">
+                        <div class="carousel-inner">
+                            {% for image in images %}
+                            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                <img src="{{ image }}" class="d-block w-100" alt="Featured promotion {{ forloop.counter }}">
+                            </div>
+                            {% endfor %}
                         </div>
-                        {% endfor %}
-                    </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Previous</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Next</span>
-                    </button>
+                        {% if images|length > 1 %}
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev" aria-label="Previous slide">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next" aria-label="Next slide">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        </button>
+                        {% endif %}
                     </div>
                 </section>
-            {% endblock %}
-            <section>
-                <div class="products">
-                    <!-- Example Product Card -->
-                    {% for i in products %}
-                    <!-- {% if forloop.counter0|divisibleby:1 %} -->
-                        <div class="product-card">  
-                            <form method="post" action="addToCartAct/{{i.product_code}}">
-                                {% csrf_token %}                  
-                                <a href="itemdetail/{{i.product_code}}"><img src="{{i.image}}" alt="Product Name" class="product-image" /></a>
-                                <h2 class="product-title">{{i.name}}</h2>
-                                <p class="product-price">{{i.price}} Rs.</p>
-                                <button class="btn-add-cart">Add to Cart</button>
+                {% endif %}
+                {% endblock %}
+
+                <section aria-label="Products">
+                    <div class="section-heading">
+                        <div>
+                            <h2>Discover your next favourite</h2>
+                            <p>Everyday picks, made for your style.</p>
+                        </div>
+                        <a href="{% url 'shop' %}" style="font-weight:700;font-size:.9rem;">View all &rarr;</a>
+                    </div>
+                    <div class="products">
+                        {% for i in products %}
+                        <article class="product-card">
+                            <form method="post" action="addToCartAct/{{ i.product_code }}">
+                                {% csrf_token %}
+                                <a class="product-image-link" href="itemdetail/{{ i.product_code }}">
+                                    <img src="{{ i.image }}" alt="{{ i.name }}" class="product-image" loading="lazy">
+                                </a>
+                                <div class="product-info">
+                                    <h3 class="product-title">{{ i.name }}</h3>
+                                    <p class="product-price">₹{{ i.price }}</p>
+                                    <button class="btn-add-cart" type="submit">Add to cart</button>
+                                </div>
                             </form>
-                        </div>        
-                                <!-- {% if forloop.counter0|divisibleby:4 and forloop.counter0 != 0 %}
-                                    <br>
-                                {% endif %} -->
-                    <!-- {% endif %} -->
-                    {% endfor %}
-                    <!-- More products can be iterated here -->
-                </div>
-            </section>
+                        </article>
+                        {% empty %}
+                        <p>No products are available right now. Please check back soon.</p>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endblock %}
+            </main>
         </div>
-        {% endblock %}
-        </main>
     </div>
     {% endblock %}
 
     <footer>
-        &copy; 2025 ShopMate. All rights reserved.
+        <p>&copy; {% now "Y" %} ShopMate. All rights reserved.</p>
     </footer>
-    <!-- At the end of the <body> -->
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
