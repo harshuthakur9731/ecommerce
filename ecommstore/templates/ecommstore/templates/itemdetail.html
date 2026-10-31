@@ -327,13 +327,13 @@
 {% block body %}
 <div class="product-detail-page">
     <div class="detail-container">
-        <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <!-- <nav class="breadcrumbs" aria-label="Breadcrumb">
             <a href="{% url 'home' %}">Home</a>
             <span aria-hidden="true">/</span>
             <a href="{% url 'shop' %}">Shop</a>
             <span aria-hidden="true">/</span>
             <span aria-current="page">{{ name }}</span>
-        </nav>
+        </nav> -->
 
         <section class="product-layout" aria-label="Product overview">
             <div class="gallery">
@@ -388,9 +388,34 @@
                 </div>
 
                 <form method="post" action="{% url 'addToCartAct' product_code %}">
-                    {% csrf_token %}
-                    <button class="add-cart-button" type="submit">ADD TO CART</button>
-                </form>
+                {% csrf_token %}
+
+                {% if has_variants %}
+                    <label for="variant_id">Select Color / Size</label>
+
+                    <select name="variant_id" id="variant_id" required>
+                        <option value="">Choose an option</option>
+
+                        {% for variant in variants %}
+                            <option
+                                value="{{ variant.id }}"
+                                {% if variant.stock == 0 %}disabled{% endif %}
+                            >
+                                {{ variant.variant_name }}
+                                {% if variant.stock == 0 %}
+                                    - Out of Stock
+                                {% else %}
+                                    - {{ variant.stock }} available
+                                {% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                {% endif %}
+
+                <button class="add-cart-button" type="submit">
+                    ADD TO CART
+                </button>
+            </form>
                 <p class="purchase-note">A great choice for your everyday style.</p>
             </div>
         </section>
@@ -431,6 +456,6 @@
 {% endblock %}
 '''
 
-out = Path("/mnt/data/itemdetail_redesigned.html")
+out = Path("/mnt/data/itemdetail.html")
 out.write_text(template, encoding="utf-8")
 print(f"Created {out} ({out.stat().st_size} bytes)")

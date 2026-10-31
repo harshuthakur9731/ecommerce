@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect,HttpResponse,get_object_or_404
-from .models import Product,CartItem,UserProfile,Order,OrderItem
+from .models import Product,CartItem,UserProfile,Order,OrderItem,ProductVariant
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -8,6 +8,7 @@ from datetime import timedelta
 from django.db.models import Q
 import logging
 import uuid
+from django.urls import reverse
 from decimal import Decimal
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -92,7 +93,7 @@ def account(request):
 
     myOrders = Order.objects.filter(
         user=request.user
-    ).order_by("-created_date")
+    ).order_by("-created_date")[:10]
 
     return render(
         request,
@@ -126,6 +127,10 @@ def itemdetail(request, PCode):
             user=request.user
         ).first()
 
+    variants = ProductVariant.objects.filter(
+            product=product
+        ).order_by("variant_name")
+
     return render(
         request,
         "ecommstore/templates/itemdetail.html",
@@ -152,6 +157,8 @@ def itemdetail(request, PCode):
             "profilepicture": (
                 profile.profile_picture if profile else ""
             ),
+            "variants": variants,
+            "has_variants": variants.exists(),
         },
     )
 
@@ -162,9 +169,10 @@ def cart(request):
         CartItem.objects
         .filter(user=request.user)
         .select_related("product", "variant")
+        .order_by("id")
     )
 
-    total_amount = Decimal("0")
+    total_amount = Decimal("0.00")
 
     for item in cart_items:
         item.amount = item.quantity * item.price
@@ -178,11 +186,12 @@ def cart(request):
         request,
         "ecommstore/templates/cartdetail.html",
         {
-            "cart_items": enumerate(cart_items),
+            "cart_items": cart_items,
             "total_amount": total_amount,
             "profilepicture": (
                 profile.profile_picture if profile else ""
             ),
+            "cart_count": sum(item.quantity for item in cart_items),
         },
     )
 
@@ -199,30 +208,70 @@ def resetcart(request):
 @require_POST
 @login_required
 def addToCartAct(request, PCode):
-    product = get_object_or_404(
-        Product,
-        product_code=PCode,
-    )
+    variant_id = request.POST.get("variant_id")
 
-    item = CartItem.objects.filter(
-        user=request.user,
-        product=product,
-        variant__isnull=True,
-    ).first()
-
-    if item:
-        item.quantity += 1
-        item.price = product.price
-        item.save()
-    else:
-        CartItem.objects.create(
-            user=request.user,
-            product=product,
-            quantity=1,
-            price=product.price,
-            related_order="",
+    with transaction.atomic():
+        product = get_object_or_404(
+            Product.objects.select_for_update(),
+            product_code=PCode
         )
 
+        has_variants = ProductVariant.objects.filter(
+            product=product
+        ).exists()
+
+        variant = None
+
+        if has_variants:
+            if not variant_id:
+                messages.error(request, "Please select a product variant.")
+                return redirect("itemdetail", PCode=PCode)
+
+            variant = get_object_or_404(
+                ProductVariant.objects.select_for_update(),
+                id=variant_id,
+                product=product
+            )
+            available_stock = variant.stock
+
+        else:
+            if variant_id:
+                messages.error(request, "Invalid product variant.")
+                return redirect("itemdetail", PCode=PCode)
+
+            available_stock = product.stock
+
+        item = CartItem.objects.filter(
+            user=request.user,
+            product=product,
+            variant=variant,
+            related_order=""
+        ).first()
+
+        current_quantity = item.quantity if item else 0
+
+        if current_quantity + 1 > available_stock:
+            messages.warning(
+                request,
+                f"Only {available_stock} units are available."
+            )
+            return redirect("itemdetail", PCode=PCode)
+
+        if item:
+            item.quantity += 1
+            item.price = product.price
+            item.save()
+        else:
+            CartItem.objects.create(
+                user=request.user,
+                product=product,
+                variant=variant,
+                quantity=1,
+                price=product.price,
+                related_order=""
+            )
+
+    messages.success(request, "Product added to your cart.")
     return redirect("cart")
 
 
@@ -243,195 +292,486 @@ def get_cart_context(user):
     cart_items = list(
         CartItem.objects
         .filter(user=user)
-        .select_related("product")
+        .select_related("product", "variant")
         .order_by("id")
     )
 
-    total_amount = sum(
-        (item.amount for item in cart_items),
-        Decimal("0.00"),
-    )
+    total_amount = Decimal("0.00")
+
+    for item in cart_items:
+        item.amount = item.quantity * item.price
+        total_amount += item.amount
 
     profile = UserProfile.objects.filter(user=user).first()
 
     return {
-        "cart_items": enumerate(cart_items),
+        "cart_items": cart_items,
         "total_amount": total_amount,
         "profilepicture": (
             profile.profile_picture if profile else ""
         ),
+        "cart_count": sum(item.quantity for item in cart_items),
     }
 
 @login_required
 @require_POST
-def order(request):
-    cart_items = list(
-        CartItem.objects
-        .filter(user=request.user)
-        .select_related("product")
-        .order_by("id")
-    )
-
-    if not cart_items:
-        messages.warning(request, "Your cart is empty.")
-        return redirect("cart")
+def updateCartQuantity(request, itemid):
+    action = request.POST.get("action")
 
     with transaction.atomic():
+        item = get_object_or_404(
+            CartItem.objects.select_for_update().select_related(
+                "product", "variant"
+            ),
+            id=itemid,
+            user=request.user,
+            related_order=""
+        )
+
+        if item.variant_id:
+            variant = ProductVariant.objects.select_for_update().get(
+                id=item.variant_id
+            )
+            available_stock = variant.stock
+        else:
+            product = Product.objects.select_for_update().get(
+                product_code=item.product_id
+            )
+            available_stock = product.stock
+
+        if action == "increase":
+            if item.quantity < available_stock:
+                item.quantity += 1
+                item.save()
+                messages.success(request, "Quantity updated.")
+            else:
+                messages.warning(
+                    request,
+                    "You have reached the available stock limit."
+                )
+
+        elif action == "decrease":
+            if item.quantity > 1:
+                item.quantity -= 1
+                item.save()
+                messages.success(request, "Quantity updated.")
+            else:
+                messages.info(
+                    request,
+                    "Minimum quantity is 1. Remove the item instead."
+                )
+        else:
+            messages.error(request, "Invalid quantity action.")
+
+    return redirect("cart")
+
+@login_required
+@require_POST
+def order(request):
+    with transaction.atomic():
+
+        cart_items = list(
+            CartItem.objects.select_for_update()
+            .filter(user=request.user, related_order="")
+            .select_related("product", "variant")
+            .order_by("id")
+        )
+
+        if not cart_items:
+            messages.warning(request, "Your cart is empty.")
+            return redirect("cart")
+
+        # Get user's default delivery address
+        profile = UserProfile.objects.filter(user=request.user).first()
+
+        delivery_address = (
+            profile.address
+            if profile and profile.address
+            else ""
+        )
+
+        # Generate order ID
         order_id = f"ODR-{uuid.uuid4().hex.upper()}"
 
+        # Create order
         new_order = Order.objects.create(
             order_id=order_id,
             user=request.user,
             status="created",
+            delivery_address=delivery_address
         )
 
         order_lines = []
-        order_amount = Decimal("0.00")
+        order_subtotal = Decimal("0.00")
 
+        # Create order items
         for item in cart_items:
-            unit_price = item.price
-            line_amount = unit_price * item.quantity
+
+            item_amount = item.price * item.quantity
 
             order_lines.append(
                 OrderItem(
                     order=new_order,
                     product=item.product,
+                    variant=item.variant,
                     quantity=item.quantity,
-                    unitprice=unit_price,
-                    amount=line_amount,
+                    unitprice=item.price,
+                    amount=item_amount
                 )
             )
 
-            order_amount += line_amount
+            order_subtotal += item_amount
 
         OrderItem.objects.bulk_create(order_lines)
 
-        new_order.amount = order_amount
-        new_order.save(update_fields=["amount"])
+        # Calculate shipping charges
+        if order_subtotal > Decimal("699.00"):
+            shipping_charge = Decimal("0.00")
+        else:
+            shipping_charge = Decimal("50.00")
 
+        # Calculate final payable amount
+        grand_total = order_subtotal + shipping_charge
+
+        # Save order price details
+        new_order.subtotal = order_subtotal
+        new_order.shipping_charge = shipping_charge
+        new_order.amount = grand_total
+
+        new_order.save(
+            update_fields=[
+                "subtotal",
+                "shipping_charge",
+                "amount"
+            ]
+        )
+
+        # Associate cart items with this order
         CartItem.objects.filter(
             user=request.user,
-            id__in=[item.id for item in cart_items],
+            id__in=[item.id for item in cart_items]
         ).update(related_order=order_id)
 
-    order_items = OrderItem.objects.filter(
-        order=new_order
-    ).select_related("product")
+    # Retrieve order items
+    order_items = (
+        OrderItem.objects.filter(order=new_order)
+        .select_related("product", "variant")
+        .order_by("id")
+    )
+
+    CartItem.objects.filter(
+            user=request.user,
+            related_order=order_id
+        ).delete()
 
     return render(
         request,
         "ecommstore/templates/ordersummary.html",
         {
             "order_items": enumerate(order_items),
-            "orderamount": order_amount,
+            "orderamount": order_subtotal,
+            "shippingcharge": shipping_charge,
+            "grandtotal": grand_total,
             "order": new_order.order_id,
-        },
+            "order_object": new_order,
+        }
     )
-
 
 @login_required
 @require_POST
 def confirmorder(request, orderid):
+
+    payment_method = request.POST.get("payment_method")
+
     with transaction.atomic():
+
         order_obj = get_object_or_404(
             Order.objects.select_for_update(),
             order_id=orderid,
-            user=request.user,
+            user=request.user
         )
 
         if order_obj.status != "created":
             messages.warning(
                 request,
-                "This order cannot be confirmed in its current state.",
+                "This order has already been processed or cannot be confirmed."
             )
-            return redirect("view_order", order_id=orderid)
+            return redirect("vieworder", orderid=orderid)
+
+        # Validate payment method
+        if payment_method not in ("online", "cod"):
+            messages.error(request, "Please select a valid payment method.")
+            return redirect("vieworder", orderid=orderid)
+
+        # COD eligibility: subtotal must be <= ₹699
+        if (
+            payment_method == "cod"
+            and order_obj.subtotal > Decimal("699.00")
+        ):
+            messages.error(
+                request,
+                "Cash on Delivery is not available for orders above ₹699. "
+                "Please choose online payment."
+            )
+            return redirect("vieworder", orderid=orderid)
+
+        # Online payment must go through a payment gateway.
+        # Do not place the order or deduct stock before payment verification.
+        if payment_method == "online":
+            messages.info(
+                request,
+                "Please continue to online payment to complete your order."
+            )
+            return redirect("vieworder", orderid=orderid)
+
+        order_items = list(
+            OrderItem.objects.filter(order=order_obj)
+            .select_related("product", "variant")
+            .order_by("id")
+        )
+
+        if not order_items:
+            messages.error(request, "This order has no items.")
+            return redirect("cart")
+
+        # First validate all stock. Do not deduct anything yet.
+        stock_records = []
+
+        for order_item in order_items:
+
+            if order_item.variant_id:
+
+                variant = ProductVariant.objects.select_for_update().filter(
+                    id=order_item.variant_id,
+                    product=order_item.product
+                ).first()
+
+                if not variant:
+                    messages.error(
+                        request,
+                        f"The selected variant for {order_item.product.name} "
+                        "is no longer available."
+                    )
+                    return redirect("vieworder", orderid=orderid)
+
+                if variant.stock < order_item.quantity:
+                    messages.error(
+                        request,
+                        f"Insufficient stock for {order_item.product.name} "
+                        f"({variant.variant_name}). Available: {variant.stock}."
+                    )
+                    return redirect("vieworder", orderid=orderid)
+
+                stock_records.append(
+                    ("variant", variant, order_item.quantity)
+                )
+
+            else:
+
+                product = Product.objects.select_for_update().get(
+                    product_code=order_item.product_id
+                )
+
+                # A product with variants must have a selected variant.
+                if ProductVariant.objects.filter(product=product).exists():
+                    messages.error(
+                        request,
+                        f"Please select a variant for {product.name}. "
+                        "This order needs to be recreated from your cart."
+                    )
+                    return redirect("cart")
+
+                if product.stock < order_item.quantity:
+                    messages.error(
+                        request,
+                        f"Insufficient stock for {product.name}. "
+                        f"Available: {product.stock}."
+                    )
+                    return redirect("vieworder", orderid=orderid)
+
+                stock_records.append(
+                    ("product", product, order_item.quantity)
+                )
+
+        # All lines passed validation. Now deduct stock.
+        for record_type, record, quantity in stock_records:
+            record.stock -= quantity
+            record.save(update_fields=["stock"])
+
+        # Store payment method if your Order model has this field.
+        # Add payment_method to the model before uncommenting this line.
+        # order_obj.payment_method = "cod"
 
         order_obj.status = "placed"
         order_obj.updated_date = timezone.now()
+
         order_obj.save(
             update_fields=["status", "updated_date"]
         )
 
         CartItem.objects.filter(
             user=request.user,
-            related_order=orderid,
+            related_order=orderid
         ).delete()
 
     messages.success(request, "Order placed successfully!")
-    return redirect("account")
+    return redirect("vieworder", orderid=orderid)
 
 @login_required
 @require_POST
 def cancelorder(request, orderid):
     with transaction.atomic():
-        order = get_object_or_404(
+        order_obj = get_object_or_404(
             Order.objects.select_for_update(),
             order_id=orderid,
-            user=request.user,
+            user=request.user
         )
 
-        # Prevent cancellation of already-finalized orders.
-        if order.status in ("cancelled", "placed"):
-            messages.error(
-                request,
-                "This order cannot be cancelled."
-            )
-            return redirect("vieworder", orderid=order.order_id)
+        if order_obj.status not in ("created", "placed"):
+            messages.error(request, "This order cannot be cancelled.")
+            return redirect("vieworder", orderid=orderid)
 
-        # Allow cancellation within two hours of order creation.
-        elapsed = timezone.now() - order.created_date
+        elapsed = timezone.now() - order_obj.created_date
 
         if elapsed > timedelta(hours=2):
             messages.error(
                 request,
                 "The cancellation window has expired."
             )
-            return redirect("vieworder", orderid=order.order_id)
+            return redirect("vieworder", orderid=orderid)
 
-        order.status = "cancelled"
-        order.updated_date = timezone.now()
-        order.save(update_fields=["status", "updated_date"])
+        # Restore inventory only for an order that was actually placed.
+        if order_obj.status == "placed":
+            order_items = OrderItem.objects.filter(
+                order=order_obj
+            ).select_related("product", "variant")
 
-        # Remove cart rows associated with this order, if present.
+            for item in order_items:
+                if item.variant_id:
+                    variant = ProductVariant.objects.select_for_update().filter(
+                        id=item.variant_id,
+                        product=item.product
+                    ).first()
+
+                    if variant:
+                        variant.stock += item.quantity
+                        variant.save(update_fields=["stock"])
+                    else:
+                        logger.error(
+                            "Cannot restore stock: variant %s for order %s "
+                            "no longer exists.",
+                            item.variant_id,
+                            orderid
+                        )
+                else:
+                    product = Product.objects.select_for_update().get(
+                        product_code=item.product_id
+                    )
+                    product.stock += item.quantity
+                    product.save(update_fields=["stock"])
+
+        order_obj.status = "cancelled"
+        order_obj.updated_date = timezone.now()
+        order_obj.save(update_fields=["status", "updated_date"])
+
         CartItem.objects.filter(
             user=request.user,
-            related_order=order.order_id,
+            related_order=orderid
         ).delete()
 
     messages.success(request, "Your order has been cancelled.")
-    return redirect("vieworder", orderid=order.order_id)
+    return redirect("vieworder", orderid=orderid)
 
-def changeDeliveryAdd(request,orderid):
-    order = Order.objects.filter(order_id=orderid)
-    print('Order:',order)
-    print("Delivery address chnaged")
-    return cart(request)
+@login_required
+@require_POST
+def changeDeliveryAdd(request, orderid):
+    order_obj = get_object_or_404(
+        Order,
+        order_id=orderid,
+        user=request.user
+    )
 
-def vieworder(request,orderid):
-    order = Order.objects.filter(order_id=orderid)
-    print('Order:',order)
-    orderitems = OrderItem.objects.filter(order=order[0].order_id)
-    print('OrderItems:',orderitems)
-    finalorderitems = {}
-    for i in range(0,len(orderitems)):
-        finalorderitems[i] = orderitems[i]
-    orderamount = order[0].amount
-    time_diff = timezone.now()-order[0].updated_date
-    two_hours = timedelta(hours=2)
-    if time_diff <= two_hours and order[0].status != "cancelled":
-        cancel_allowed = 1
-        print("The time difference is less than or equal to 2 hours.")
-    else:
-        cancel_allowed = 0
-        print("The time difference is greater than 2 hours.")
-    print("time_diff",time_diff)
+    # Only allow address changes before confirmation
+    if order_obj.status != "created":
+        messages.error(
+            request,
+            "The delivery address can only be changed before order confirmation."
+        )
+        return redirect("vieworder", orderid=orderid)
 
-    userprofile = UserProfile.objects.filter(user=request.user)
-    profilepicture = ''
-    if len(userprofile) > 0:
-        profilepicture = userprofile[0].profile_picture
+    new_address = request.POST.get("delivery_address", "").strip()
 
-    return render(request,'ecommstore/templates/orderdetails.html',{"order":order[0],"order_items":finalorderitems.items(),"orderamount":orderamount,"cancel_allowed":cancel_allowed,"profilepicture":profilepicture})
+    if not new_address:
+        messages.error(request, "Please enter a delivery address.")
+        return redirect(request.META.get(
+            "HTTP_REFERER",
+            reverse("vieworder", kwargs={"orderid": orderid})
+        ))
+
+    order_obj.delivery_address = new_address
+    order_obj.save(update_fields=["delivery_address"])
+
+    messages.success(
+        request,
+        "Delivery address updated successfully."
+    )
+
+    return redirect(request.META.get(
+        "HTTP_REFERER",
+        reverse("vieworder", kwargs={"orderid": orderid})
+    ))
+
+@login_required
+def vieworder(request, orderid):
+
+    # Fetch order belonging to the logged-in user
+    order_obj = get_object_or_404(
+        Order,
+        order_id=orderid,
+        user=request.user
+    )
+
+    # Fetch order items with product and variant details
+    order_items = (
+        OrderItem.objects.filter(order=order_obj)
+        .select_related("product", "variant")
+        .order_by("id")
+    )
+
+    # Calculate cancellation eligibility
+    elapsed = timezone.now() - order_obj.created_date
+
+    cancel_allowed = (
+        elapsed <= timedelta(hours=2)
+        and order_obj.status in ("created", "placed")
+    )
+
+    # Get user profile
+    profile = UserProfile.objects.filter(
+        user=request.user
+    ).first()
+
+    return render(
+        request,
+        "ecommstore/templates/orderdetails.html",
+        {
+            "order": order_obj,
+            "order_items": enumerate(order_items),
+
+            # Price details
+            "orderamount": order_obj.subtotal,
+            "shippingcharge": order_obj.shipping_charge,
+            "grandtotal": order_obj.amount,
+
+            # Cancellation
+            "cancel_allowed": cancel_allowed,
+
+            # Profile
+            "profilepicture": (
+                profile.profile_picture if profile else ""
+            ),
+        }
+    )
 
 def search_products(request):
     query = request.GET.get('q')

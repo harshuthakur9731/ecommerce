@@ -1,201 +1,555 @@
 {% extends 'base.html' %}
-{% csrf_token %}
-{% block title %}Shopping Cart - Your Cart Details{% endblock %}
-{% block css %}
-        body{
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f7fa;
-            margin: 0;
-            padding: 0;
-            color: #333;
-        }
-        .container {
-            max-width: 850px;
-            background-color:#B9EBE4;
-            margin: 2rem auto;
-            padding: 1rem 2rem 2rem 2rem;
-            background: #fff;
-            background-color:pink;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.5);
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 1.5rem;
-            color: #007bff;
-            font-weight: 700;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 1.5rem;
-        }
-        thead {
-            background: #007bff;
-            color: white;
-        }
-        th, td {
-            padding: 0.75rem 1rem;
-            text-align: left;
-            border-bottom: 1px solid #e0e0e0;
-            vertical-align: middle;
-        }
-        tbody tr:hover {
-            background: #f1f9ff;
-        }
-        .price {
-            <!-- text-align: right; -->
-            font-weight: 600;
-        }
-        .amount {
-            text-align: right;
-            font-weight: 600;
-        }
-        .quantity,
-        .variant {
-            text-align: center;
-            font-weight: 500;
-            color: #444;
-        }
-        .total-row {
-            font-size: 1.2rem;
-            font-weight: 700;
-            border-top: 2px solid #007bff;
-            color: black;
-        }
-        .buy-now-btn {
-            display: block;
-            width: 100%;
-            text-align: center;
-            background-color: #28a745;
-            color: white;
-            font-size: 1.25rem;
-            font-weight: 600;
-            padding: 0.75rem 0;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background-color 0.3s ease;
-            user-select: none;
-            margin-top: 1rem;
-        }
-        .buy-now-btn:hover {
-            background-color: #218838;
-        }
-        .remove-btn {
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 0.35rem 0.6rem;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: background-color 0.3s ease;
-        }
-        .remove-btn:hover {
-            background-color: #bb2d3b;
-        }
-        .reset-cart-btn {
-            background-color: #ffc107;
-            color: #212529;
-            border: none;
-            border-radius: 6px;
-            padding: 0.6rem 1rem;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 1rem;
-            margin-bottom: 1rem;
-            float: right;
-            transition: background-color 0.3s ease;
-        }
-        .reset-cart-btn:hover {
-            background-color: #e0a800;
-        }
-        .empty-cart {
-            text-align: center;
-            font-style: italic;
-            color: #888;
-            margin: 2rem 0;
-            font-size: 1.1rem;
-        }
-        /* Clear float */
-        .clearfix::after {
-            content: "";
-            display: table;
-            clear: both;
-        }
-{% endblock %}
-{% block body %}
-    <div class="container" style="background-color:#B9EBE4;">
-        <h1>Your Shopping Cart</h1>
-        {% if cart_items %}
-        <div class="clearfix">
-            <form method="POST" action="{% url 'resetCart' %}" style="display:inline-block;">
-                {% csrf_token %}
-                <button type="submit" class="reset-cart-btn">Reset Cart</button>
-            </form>
-        </div>
-        
-        <table>
-            <thead>
-                <tr>
-                    <th>Item</th>
-                    <th class="variant">Variant</th>
-                    <th class="quantity">Quantity</th>
-                    <th class="price">Unit Price</th>
-                    <th class="amount">Amount</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for key, value in cart_items %}
-                <tr>
-                    <td>{{ value.product }}</td>
-                    <td class="variant" contenteditable="true">{{ value.variant }}</td>
-                    <td class="quantity" contenteditable="true">{{ value.quantity }}</td>
-                    <td class="price">{{ value.price|floatformat:2 }} Rs.</td>
-                    <td class="amount">{{ value.amount|floatformat:2 }} Rs.</td>
 
-                    <td>
-                        <form method="POST" action="{% url 'delToCartAct' value.id %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="item_id" value="{{ value.id }}" />
-                            <button type="submit" class="remove-btn">Remove</button>
-                        </form>
-                    </td>
-                    
-                    <!-- <td>
-                        <form method="POST">
-                            {% csrf_token %}
-                            <input type="hidden" name="item_id" value="{{ value.id }}" />
-                            <button type="radio" class="plus-qty">+</button>
-                        </form>
-                    </td>
-                    <td>
-                        <form method="POST" >
-                            {% csrf_token %}
-                            <input type="hidden" name="item_id" value="{{ value.id }}" />
-                            <button type="radio" class="minus-qty">-</button>
-                        </form>
-                    </td> -->
-                </tr>
-                {% endfor %}
-                <tr class="total-row">
-                    <td colspan="4">Total</td>
-                    <td class="amount">Rs. {{ total_amount|floatformat:2 }}</td>
-                    <td></td>
-                </tr>
-            </tbody>
-        </table>
-        <form method="POST" action="{% url 'order' %}">
-            {% csrf_token %}
-            <button type="submit" class="buy-now-btn">Buy Now</button>
-        </form>
-        {% else %}
-        <p class="empty-cart">Your cart is empty!<br>Please Add Item to your cart.
+{% block title %}Shopping Cart | Your Store{% endblock %}
+
+{% block css %}
+<style>
+    .cart-page {
+        background: #f5f6f8;
+        min-height: 75vh;
+        padding: 45px 15px;
+        color: #252525;
+    }
+
+    .cart-container {
+        max-width: 1150px;
+        margin: auto;
+    }
+
+    .cart-heading {
+        font-size: 30px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: #202124;
+    }
+
+    .cart-subheading {
+        color: #777;
+        margin-bottom: 30px;
+    }
+
+    .cart-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        gap: 25px;
+        align-items: start;
+    }
+
+    .cart-card,
+    .summary-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 3px 15px rgba(0,0,0,.06);
+    }
+
+    .cart-card {
+        padding: 22px;
+        overflow-x: auto;
+    }
+
+    .cart-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        gap: 12px;
+    }
+
+    .cart-top h2 {
+        font-size: 19px;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .reset-cart-btn {
+        border: 1px solid #dc3545;
+        background: #fff;
+        color: #dc3545;
+        border-radius: 6px;
+        padding: 8px 13px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    .reset-cart-btn:hover {
+        background: #dc3545;
+        color: #fff;
+    }
+
+    .cart-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 570px;
+    }
+
+    .cart-table th {
+        color: #777;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        padding: 13px 10px;
+        border-bottom: 1px solid #eee;
+        text-align: left;
+    }
+
+    .cart-table td {
+        padding: 19px 10px;
+        border-bottom: 1px solid #eee;
+        vertical-align: middle;
+        font-size: 14px;
+    }
+
+    .product-name {
+        font-weight: 650;
+        color: #292929;
+    }
+
+    .variant-text,
+    .quantity-text {
+        color: #666;
+        text-align: center;
+    }
+
+    .price-text,
+    .amount-text {
+        white-space: nowrap;
+        font-weight: 600;
+    }
+
+    .amount-text {
+        color: #202124;
+    }
+
+    .remove-btn {
+        border: none;
+        background: #fff0f0;
+        color: #dc3545;
+        padding: 7px 11px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    .remove-btn:hover {
+        background: #dc3545;
+        color: #fff;
+    }
+
+    .summary-card {
+        padding: 24px;
+        position: sticky;
+        top: 20px;
+    }
+
+    .summary-card h2 {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 22px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+        color: #666;
+        font-size: 14px;
+    }
+
+    .summary-total {
+        border-top: 1px solid #eee;
+        padding-top: 17px;
+        margin-top: 18px;
+        color: #222;
+        font-size: 19px;
+        font-weight: 750;
+    }
+
+    .checkout-btn {
+        display: block;
+        width: 100%;
+        background: #171717;
+        color: white;
+        border: none;
+        border-radius: 7px;
+        padding: 14px;
+        text-align: center;
+        font-size: 15px;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        transition: .25s;
+        margin-top: 22px;
+    }
+
+    .checkout-btn:hover {
+        background: #333;
+        color: white;
+    }
+
+    .continue-shopping {
+        display: block;
+        text-align: center;
+        margin-top: 15px;
+        color: #555;
+        font-size: 13px;
+        text-decoration: none;
+    }
+
+    .continue-shopping:hover {
+        color: #000;
+        text-decoration: underline;
+    }
+
+    .secure-message {
+        text-align: center;
+        color: #888;
+        font-size: 12px;
+        margin-top: 18px;
+    }
+
+    .empty-cart {
+        text-align: center;
+        padding: 65px 20px;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 3px 15px rgba(0,0,0,.05);
+    }
+
+    .empty-cart h2 {
+        font-size: 23px;
+        margin: 15px 0 8px;
+    }
+
+    .empty-cart p {
+        color: #777;
+    }
+
+    .empty-cart a {
+        display: inline-block;
+        margin-top: 15px;
+        padding: 11px 22px;
+        background: #171717;
+        color: white;
+        border-radius: 6px;
+        text-decoration: none;
+    }
+
+    @media (max-width: 850px) {
+        .cart-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .summary-card {
+            position: static;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .cart-page {
+            padding: 25px 10px;
+        }
+
+        .cart-heading {
+            font-size: 25px;
+        }
+
+        .cart-card {
+            padding: 14px;
+        }
+
+        .cart-top h2 {
+            font-size: 17px;
+        }
+    }
+    
+    .cart-product {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 180px;
+    }
+
+    .cart-product-image,
+    .cart-image-placeholder {
+        width: 65px;
+        height: 65px;
+        border-radius: 8px;
+        object-fit: cover;
+        flex-shrink: 0;
+        background: #f1f1f1;
+    }
+
+    .cart-image-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        color: #888;
+    }
+
+    .product-name {
+        font-weight: 650;
+        color: #252525;
+    }
+
+    .cart-product small {
+        color: #888;
+        font-size: 11px;
+    }
+
+    .quantity-control {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .quantity-control form {
+        margin: 0;
+    }
+
+    .quantity-btn {
+        width: 29px;
+        height: 29px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background: white;
+        color: #222;
+        font-size: 18px;
+        cursor: pointer;
+    }
+
+    .quantity-btn:hover:not(:disabled) {
+        background: #171717;
+        color: white;
+    }
+
+    .quantity-btn:disabled {
+        opacity: .35;
+        cursor: not-allowed;
+    }
+
+    .quantity-value {
+        min-width: 18px;
+        text-align: center;
+        font-weight: 650;
+    }
+    .cart-table {
+        min-width: 750px;
+    }
+
+    .cart-table td {
+        vertical-align: middle;
+    }
+
+    .quantity-control form {
+        display: inline-block;
+    }
+
+    .remove-btn {
+        white-space: nowrap;
+    }
+
+</style>
+{% endblock %}
+
+
+{% block body %}
+
+<div class="cart-page">
+    <div class="cart-container">
+
+        <h1 class="cart-heading">Shopping Cart</h1>
+        <p class="cart-subheading">
+            Review your items before proceeding to checkout.
         </p>
+
+        {% if cart_items %}
+
+        <div class="cart-layout">
+
+            <!-- CART ITEMS -->
+            <section class="cart-card">
+
+                <div class="cart-top">
+                    <h2>Your Items</h2>
+
+                    <form method="POST" action="{% url 'resetCart' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="reset-cart-btn"
+                                onclick="return confirm('Are you sure you want to empty your cart?');">
+                            Clear Cart
+                        </button>
+                    </form>
+                </div>
+
+                <table class="cart-table">
+
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Variant</th>
+                            <th>Qty</th>
+                            <th>Unit Price</th>
+                            <th>Amount</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for value in cart_items %}
+
+                        <tr>
+                            <td>
+                                <div class="cart-product">
+                                    {% if value.product.image %}
+                                        <a href="{% url 'itemdetail' value.product.product_code %}">
+                                            <img
+                                                src="{{ value.product.image }}"
+                                                alt="{{ value.product.name }}"
+                                                class="cart-product-image"
+                                            >
+                                        </a>
+                                    {% else %}
+                                        <div class="cart-image-placeholder">
+                                            <span>No image</span>
+                                        </div>
+                                    {% endif %}
+
+                                    <div>
+                                        <div class="product-name">
+                                            {{ value.product.name }}
+                                        </div>
+                                        <small>{{ value.product.product_code }}</small>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td class="variant-text">
+                                {% if value.variant %}
+                                    {{ value.variant.variant_name }}
+                                {% else %}
+                                    Standard
+                                {% endif %}
+                            </td>
+
+                            <td>
+                                <div class="quantity-control">
+                                    <form method="POST"
+                                        action="{% url 'updateCartQuantity' value.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="decrease">
+                                        <button type="submit"
+                                                class="quantity-btn"
+                                                aria-label="Decrease quantity">−</button>
+                                    </form>
+
+                                    <span class="quantity-value">{{ value.quantity }}</span>
+
+                                    <form method="POST"
+                                        action="{% url 'updateCartQuantity' value.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="increase">
+                                        <button type="submit"
+                                                class="quantity-btn"
+                                                aria-label="Increase quantity"
+                                                {% if value.variant %}
+                                                    {% if value.quantity >= value.variant.stock %}disabled{% endif %}
+                                                {% else %}
+                                                    {% if value.quantity >= value.product.stock %}disabled{% endif %}
+                                                {% endif %}>+</button>
+                                    </form>
+                                </div>
+                            </td>
+
+                            <td class="price-text">
+                                ₹{{ value.price|floatformat:2 }}
+                            </td>
+
+                            <td class="amount-text">
+                                ₹{{ value.amount|floatformat:2 }}
+                            </td>
+
+                            <td>
+                                <form method="POST"
+                                      action="{% url 'delToCartAct' value.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="item_id"
+                                           value="{{ value.id }}">
+
+                                    <button type="submit" class="remove-btn"
+                                            onclick="return confirm('Remove this item from your cart?');">
+                                        Remove
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+                </table>
+
+            </section>
+
+
+            <!-- ORDER SUMMARY -->
+            <aside class="summary-card">
+
+                <h2>Order Summary</h2>
+
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <strong>₹{{ total_amount|floatformat:2 }}</strong>
+                </div>
+
+                <div class="summary-row">
+                    <span>Shipping</span>
+                    <strong>Calculated at checkout</strong>
+                </div>
+
+                <div class="summary-row summary-total">
+                    <span>Total</span>
+                    <strong>₹{{ total_amount|floatformat:2 }}</strong>
+                </div>
+
+                <form method="POST" action="{% url 'order' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="checkout-btn">
+                        Proceed to Checkout →
+                    </button>
+                </form>
+
+                <a href="/" class="continue-shopping">
+                    ← Continue Shopping
+                </a>
+
+                <p class="secure-message">
+                    🔒 Secure checkout
+                </p>
+
+            </aside>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-cart">
+            <div style="font-size:55px;">🛒</div>
+            <h2>Your cart is empty</h2>
+            <p>Looks like you haven't added anything to your cart yet.</p>
+            <a href="/">Continue Shopping</a>
+        </div>
+
         {% endif %}
+
     </div>
+</div>
+
 {% endblock %}

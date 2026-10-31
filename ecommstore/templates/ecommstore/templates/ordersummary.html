@@ -1,195 +1,764 @@
 {% extends 'base.html' %}
-{% csrf_token %}
-{% block title %}Order - Your Order Summary{% endblock %}
-{% block css %}
-        body{
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f7fa;
-            margin: 0;
-            padding: 0;
-            color: #333;
-        }
-        .container {
-            max-width: 850px;
-            margin: 2rem auto;
-            padding: 1rem 2rem 2rem 2rem;
-            background: #fff;
-            background-color:pink;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.5);
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 1.5rem;
-            color: #007bff;
-            font-weight: 700;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 1.5rem;
-        }
-        thead {
-            background: #007bff;
-            color: white;
-        }
-        th, td {
-            padding: 0.75rem 1rem;
-            text-align: left;
-            border-bottom: 1px solid #e0e0e0;
-            vertical-align: middle;
-        }
-        tbody tr:hover {
-            background: #f1f9ff;
-        }
-        .price {
-            <!-- text-align: right; -->
-            font-weight: 600;
-        }
-        .amount {
-            text-align: right;
-            font-weight: 600;
-        }
-        .quantity,
-        .variant {
-            text-align: center;
-            font-weight: 500;
-            color: #444;
-        }
-        .total-row {
-            font-size: 1.2rem;
-            font-weight: 700;
-            border-top: 2px solid #007bff;
-            color: black;
-        }
-        .confirm-btn {
-            display: block;
-            width: 100%;
-            text-align: center;
-            background-color: #28a745;
-            color: white;
-            font-size: 1.25rem;
-            font-weight: 600;
-            padding: 0.75rem 0;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background-color 0.3s ease;
-            user-select: none;
-            margin-top: 1rem;
-        }
-        .confirm-btn:hover {
-            background-color: #218838;
-        }
-        .remove-btn {
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 0.35rem 0.6rem;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: background-color 0.3s ease;
-        }
-        .remove-btn:hover {
-            background-color: #bb2d3b;
-        }
-        .cancel-order-btn {
-            background-color: #fa3416;
-            color: #212529;
-            border: none;
-            border-radius: 6px;
-            padding: 0.6rem 1rem;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 1rem;
-            margin-bottom: 1rem;
-            float: right;
-            transition: background-color 0.3s ease;
-        }
-        .cancel-order-btn:hover {
-            background-color: #e23d24;
-        }
-        .empty-cart {
-            text-align: center;
-            font-style: italic;
-            color: #888;
-            margin: 2rem 0;
-            font-size: 1.1rem;
-        }
-        /* Clear float */
-        .clearfix::after {
-            content: "";
-            display: table;
-            clear: both;
-        }
-{% endblock %}
-{% block body %}
-    <div class="container" style="background-color:#9bd8d0;">
-        <h1>Your Order Summary</h1>
 
-        <!-- {% if messages %}
-            {% for message in messages %}
-                <div class="message">{{ message }}</div>
-            {% endfor %}
-        {% endif %} -->
+{% block title %}Order Summary | ShopMate{% endblock %}
+
+{% block css %}
+<style>
+    .order-page {
+        background: #f5f7fb;
+        min-height: 75vh;
+        padding: 45px 16px 65px;
+        color: #1e293b;
+    }
+
+    .order-container {
+        max-width: 1050px;
+        margin: 0 auto;
+        background: #fff;
+        border: 1px solid #e8edf4;
+        border-radius: 16px;
+        padding: 32px;
+        box-shadow: 0 12px 35px rgba(15, 23, 42, 0.07);
+    }
+
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+        flex-wrap: wrap;
+        padding-bottom: 24px;
+        border-bottom: 1px solid #edf0f5;
+        margin-bottom: 25px;
+    }
+
+    .order-heading h1 {
+        font-size: 27px;
+        font-weight: 750;
+        color: #172554;
+        margin: 0 0 9px;
+    }
+
+    .order-heading p {
+        color: #64748b;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .order-id {
+        display: inline-block;
+        background: #eff6ff;
+        color: #1d4ed8;
+        padding: 8px 13px;
+        border-radius: 7px;
+        font-size: 13px;
+        font-weight: 700;
+        word-break: break-all;
+    }
+
+    .order-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-bottom: 22px;
+    }
+
+    .order-info-label {
+        font-size: 13px;
+        color: #64748b;
+        margin-bottom: 5px;
+    }
+
+    .order-info-value {
+        font-size: 15px;
+        font-weight: 650;
+        color: #334155;
+    }
+
+    .cancel-order-btn {
+        background: #fff;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+        border-radius: 8px;
+        padding: 10px 17px;
+        font-size: 13px;
+        font-weight: 650;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+
+    .cancel-order-btn:hover {
+        background: #fef2f2;
+        border-color: #ef4444;
+    }
+
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        border: 1px solid #e8edf4;
+        border-radius: 10px;
+    }
+
+    .order-table {
+        width: 100%;
+        min-width: 680px;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+    .order-table thead {
+        background: #f1f5f9;
+    }
+
+    .order-table th {
+        color: #475569;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 700;
+        padding: 16px 15px;
+        text-align: left;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .order-table td {
+        padding: 17px 15px;
+        border-bottom: 1px solid #edf0f5;
+        color: #334155;
+        font-size: 14px;
+        vertical-align: middle;
+    }
+
+    .order-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .order-table tbody tr:not(.total-row):hover {
+        background: #f8fafc;
+    }
+
+    .product-name {
+        font-weight: 650;
+        color: #1e293b;
+    }
+
+    .variant {
+        text-align: center;
+        color: #475569;
+    }
+
+    .variant-label {
+        display: inline-block;
+        background: #f1f5f9;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .quantity {
+        text-align: center;
+        font-weight: 600;
+    }
+
+    .price,
+    .amount {
+        text-align: right;
+        white-space: nowrap;
+        font-weight: 600;
+    }
+
+    .total-row {
+        background: #f8fafc;
+    }
+
+    .total-row td {
+        font-size: 15px;
+        font-weight: 750;
+        color: #172554;
+        padding-top: 19px;
+        padding-bottom: 19px;
+    }
+
+    .total-label {
+        text-align: right;
+    }
+
+    .total-amount {
+        text-align: right;
+        white-space: nowrap;
+        color: #15803d !important;
+        font-size: 18px !important;
+    }
+
+    .order-actions {
+        display: flex;
+        gap: 13px;
+        margin-top: 25px;
+        flex-wrap: wrap;
+    }
+
+    .confirm-btn {
+        flex: 1;
+        min-width: 220px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #2563eb;
+        color: #fff;
+        font-size: 15px;
+        font-weight: 700;
+        padding: 15px 20px;
+        border: none;
+        border-radius: 9px;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+
+    .confirm-btn:hover {
+        background: #1d4ed8;
+        box-shadow: 0 5px 15px rgba(37, 99, 235, 0.2);
+    }
+
+    .empty-order {
+        text-align: center;
+        padding: 55px 15px;
+    }
+
+    .empty-order h2 {
+        color: #334155;
+        font-size: 21px;
+        margin-bottom: 10px;
+    }
+
+    .empty-order p {
+        color: #64748b;
+        font-size: 14px;
+        margin-bottom: 22px;
+    }
+
+    .shop-link {
+        display: inline-block;
+        background: #2563eb;
+        color: #fff;
+        text-decoration: none;
+        padding: 11px 22px;
+        border-radius: 8px;
+        font-weight: 650;
+        font-size: 14px;
+    }
+
+    .shop-link:hover {
+        background: #1d4ed8;
+        color: #fff;
+    }
+
+    .order-message {
+        padding: 12px 15px;
+        border-radius: 8px;
+        margin-bottom: 18px;
+        font-size: 14px;
+        background: #eff6ff;
+        color: #1e40af;
+    }
+
+    @media (max-width: 600px) {
+        .order-page {
+            padding: 22px 10px 40px;
+        }
+
+        .order-container {
+            padding: 20px 14px;
+            border-radius: 12px;
+        }
+
+        .order-heading h1 {
+            font-size: 23px;
+        }
+
+        .order-header {
+            padding-bottom: 18px;
+        }
+
+        .order-info {
+            align-items: flex-start;
+        }
+
+        .cancel-order-btn {
+            width: 100%;
+        }
+
+        .order-actions {
+            flex-direction: column;
+        }
+
+        .confirm-btn {
+            width: 100%;
+            min-width: 0;
+        }
+    }
+    .delivery-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 20px;
+        margin: 25px 0;
+    }
+
+    .delivery-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .delivery-card-header h3 {
+        margin: 0 0 5px;
+        font-size: 17px;
+        color: #172554;
+    }
+
+    .delivery-card-header p {
+        margin: 0;
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    .delivery-icon {
+        font-size: 25px;
+    }
+
+    .delivery-address {
+        margin-top: 15px;
+        padding: 14px;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        color: #334155;
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
+    .missing-address {
+        color: #dc2626;
+    }
+
+    .change-address {
+        margin-top: 15px;
+    }
+
+    .change-address summary {
+        color: #2563eb;
+        font-size: 14px;
+        font-weight: 650;
+        cursor: pointer;
+    }
+
+    .change-address form {
+        margin-top: 15px;
+    }
+
+    .change-address label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 13px;
+        font-weight: 650;
+        color: #334155;
+    }
+
+    .change-address textarea {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 14px;
+        resize: vertical;
+        outline: none;
+    }
+
+    .change-address textarea:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, .1);
+    }
+
+    .save-address-btn {
+        margin-top: 12px;
+        padding: 10px 17px;
+        background: #2563eb;
+        color: white;
+        border: none;
+        border-radius: 7px;
+        font-weight: 650;
+        cursor: pointer;
+    }
+
+    .save-address-btn:hover {
+        background: #1d4ed8;
+    }
+
+    .shipping-row td {
+        padding: 14px 15px;
+        border-bottom: 1px solid #edf0f5;
+        color: #475569;
+        font-size: 14px;
+    }
+
+    .free-shipping {
+        color: #15803d;
+        font-weight: 750;
+    }
+
+    .grand-total-row {
+        background: #eff6ff;
+    }
+
+    .grand-total-row td {
+        padding: 18px 15px;
+        font-size: 16px;
+        font-weight: 750;
+        color: #172554;
+    }
+
+    .grand-total-amount {
+        text-align: right;
+        white-space: nowrap;
+        font-size: 19px !important;
+        color: #15803d !important;
+    }
+
+    .shipping-note {
+        margin-top: 15px;
+        padding: 12px 15px;
+        border-radius: 8px;
+        background: #f0fdf4;
+        color: #166534;
+        font-size: 13px;
+    }
+
+    .payment-modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .payment-modal.show {
+        display: flex;
+    }
+
+    .payment-modal-content {
+        background: #fff;
+        width: 100%;
+        max-width: 430px;
+        padding: 28px;
+        border-radius: 16px;
+        position: relative;
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+    }
+
+    .payment-modal-content h2 {
+        margin: 0 0 8px;
+        color: #172033;
+    }
+
+    .payment-modal-content p {
+        color: #667085;
+        margin-bottom: 22px;
+    }
+
+    .close-modal {
+        position: absolute;
+        right: 16px;
+        top: 12px;
+        border: 0;
+        background: transparent;
+        font-size: 28px;
+        cursor: pointer;
+    }
+
+    .payment-option {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 12px;
+        cursor: pointer;
+    }
+
+    .payment-option input {
+        accent-color: #2563eb;
+        width: 18px;
+        height: 18px;
+    }
+
+    .payment-option span {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .payment-option small {
+        color: #667085;
+    }
+
+    .disabled-option {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #f8fafc;
+    }
+
+    .payment-submit-btn,
+    .confirm-order-btn {
+        width: 100%;
+        padding: 14px;
+        border: 0;
+        border-radius: 9px;
+        background: #172f57;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 12px;
+    }
+
+    .payment-submit-btn:hover,
+    .confirm-order-btn:hover {
+        background: #254879;
+    }
+
+</style>
+{% endblock %}
+
+
+{% block body %}
+<div class="order-page">
+    <div class="order-container">
 
         {% if order_items %}
-        <div class="clearfix">
-            <strong>Order ID: {{ order.order_id|default:order }}</strong>
-            <br><br>
 
-            <!-- <strong>Order Status:</strong>
-            {{ order.status|title }}    -->
+        <div class="order-header">
+            <div class="order-heading">
+                <h1>Order Summary</h1>
+                <p>Review your selected items before confirming your order.</p>
+            </div>
+
+            <div class="order-id">
+                Order ID: {{ order.order_id|default:order }}
+            </div>
+        </div>
+
+        <div class="delivery-card">
+            <div class="delivery-card-header">
+                <div>
+                    <h3>Delivery Address</h3>
+                    <p>Your order will be delivered to this address.</p>
+                </div>
+
+                <span class="delivery-icon">📍</span>
+            </div>
+
+            <div class="delivery-address">
+                {% if order_object.delivery_address %}
+                    {{ order_object.delivery_address |linebreaksbr }}
+                {% else %}
+                    <span class="missing-address">
+                        No delivery address added. Please enter your address.
+                    </span>
+                {% endif %}
+            </div>
+
+            <details class="change-address">
+                <summary>✏️ Change Delivery Address</summary>
+
+                <form method="POST"
+                    action="{% url 'changeDeliveryAdd' order.order_id|default:order %}">
+                    {% csrf_token %}
+
+                    <label for="delivery_address">Enter your delivery address</label>
+
+                    <textarea
+                        id="delivery_address"
+                        name="delivery_address"
+                        rows="4"
+                        maxlength="2000"
+                        required
+                        placeholder="House number, street, area, city, state, PIN code..."
+                    >{{ order_object.delivery_address }}</textarea>
+
+                    <button type="submit" class="save-address-btn">
+                        Save Delivery Address
+                    </button>
+                </form>
+            </details>
+        </div>
+
+        <div class="order-info">
+            <div>
+                <div class="order-info-label">Order Details</div>
+                <div class="order-info-value">Your selected products</div>
+            </div>
+
             <form method="POST"
-                    action="{% url 'cancelorder' order.order_id|default:order %}"
-                style="display:inline-block;">
+                  action="{% url 'cancelorder' order.order_id|default:order %}"
+                  onsubmit="return confirm('Are you sure you want to cancel this order?');">
                 {% csrf_token %}
-                <button type="submit"
-                        class="cancel-order-btn"
-                        onclick="return confirm('Are you sure you want to cancel this order?');">
+                <button type="submit" class="cancel-order-btn">
                     Cancel Order
                 </button>
             </form>
         </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Item</th>
-                    <th class="variant">Variant</th>
-                    <th class="quantity">Quantity</th>
-                    <th class="price">Unit Price</th>
-                    <th class="amount">Amount</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for key, value in order_items %}
-                <tr>
-                    <td>{{ value.product }}</td>
-                    <td class="variant">{{ value.variant }}</td>
-                    <td class="quantity">{{ value.quantity }}</td>
-                    <td class="price">{{ value.unitprice|floatformat:2 }} Rs.</td>
-                    <td class="amount">{{ value.amount|floatformat:2 }} Rs.</td>
-                    <td class="action"></td>
-                </tr>
-                {% endfor %}
-                <tr class="total-row">
-                    <td colspan="4">Total</td>
-                    <td class="amount">Rs. {{ orderamount|floatformat:2 }}</td>
-                    <td></td>
-                </tr>
-            </tbody>
-        </table>
-        <form action="{% url 'confirmorder' order %}">
-            
-            <button type="submit" class="confirm-btn">Confirm/Proceed-PaymentOptions</button>
-        </form>
+
+        <div class="table-wrapper">
+            <table class="order-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th class="variant">Variant</th>
+                        <th class="quantity">Qty</th>
+                        <th class="price">Unit Price</th>
+                        <th class="amount">Amount</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for key, value in order_items %}
+                    <tr>
+                        <td>
+                            <span class="product-name">
+                                {{ value.product }}
+                            </span>
+                        </td>
+
+                        <td class="variant">
+                            <span class="variant-label">
+                                {% if value.variant %}
+                                    {{ value.variant.variant_name }}
+                                {% else %}
+                                    Standard
+                                {% endif %}
+                            </span>
+                        </td>
+
+                        <td class="quantity">
+                            {{ value.quantity }}
+                        </td>
+
+                        <td class="price">
+                            Rs. {{ value.unitprice|floatformat:2 }}
+                        </td>
+
+                        <td class="amount">
+                            Rs. {{ value.amount|floatformat:2 }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                    <tr class="total-row">
+                        <td colspan="4">Subtotal</td>
+                        <td class="total-amount">
+                            Rs. {{ orderamount|floatformat:2 }}
+                        </td>
+                    </tr>
+
+                    <tr class="shipping-row">
+                        <td colspan="4">Shipping Charges</td>
+                        <td class="amount">
+                            {% if shippingcharge == 0 %}
+                                <span class="free-shipping">FREE</span>
+                            {% else %}
+                                Rs. {{ shippingcharge|floatformat:2 }}
+                            {% endif %}
+                        </td>
+                    </tr>
+
+                    <tr class="grand-total-row">
+                        <td colspan="4">Total Payable</td>
+                        <td class="grand-total-amount">
+                            Rs. {{ grandtotal|floatformat:2 }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="shipping-note">
+                {% if orderamount > 699 %}
+                    🎉 Congratulations! You qualify for FREE shipping.
+                {% else %}
+                    Add more products to your order to exceed ₹699 and unlock FREE shipping!
+                {% endif %}
+            </div>
+        </div>
+
+        <button type="button" class="confirm-order-btn" onclick="openPaymentDialog()">
+            Confirm/Proceed to Payment
+        </button>
+
+        <div id="paymentDialog" class="payment-modal">
+            <div class="payment-modal-content">
+                <button type="button" class="close-modal" onclick="closePaymentDialog()">&times;</button>
+
+                <h2>Select Payment Method</h2>
+                <p>Choose how you would like to pay for your order.</p>
+
+                <form method="POST" action="{% url 'confirmorder' order %}">
+                    {% csrf_token %}
+
+                    <label class="payment-option">
+                        <input type="radio" name="payment_method" value="online" required>
+                        <span>
+                            <strong>Online Payment</strong>
+                            <small>Pay securely online</small>
+                        </span>
+                    </label>
+
+                    <label class="payment-option {% if order_object.subtotal > 699 %}disabled-option{% endif %}">
+                        <input
+                            type="radio"
+                            name="payment_method"
+                            value="cod"
+                            {% if order_object.subtotal > 699 %}disabled{% endif %}
+                            required
+                        >
+                        <span>
+                            <strong>Cash on Delivery</strong>
+                            <small>
+                                {% if order_object.subtotal > 699 %}
+                                    Not available for orders above ₹699
+                                {% else %}
+                                    Pay when your order is delivered
+                                {% endif %}
+                            </small>
+                        </span>
+                    </label>
+
+                    <button type="submit" class="payment-submit-btn">
+                        Continue
+                    </button>
+                </form>
+            </div>
+        </div>
+
         {% else %}
-        <p class="empty-cart">Your Order does not have any items included!<br>Please Add Item to your cart.
-        </p>
+
+        <div class="empty-order">
+            <h2>Your order is empty</h2>
+            <p>No products were found in this order. Visit our shop to explore products.</p>
+            <a href="{% url 'shop' %}" class="shop-link">
+                Continue Shopping
+            </a>
+        </div>
+
         {% endif %}
+
     </div>
+</div>
+
 {% endblock %}
