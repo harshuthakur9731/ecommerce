@@ -804,11 +804,9 @@ def updateMyInfo(request):
     firstName= request.POST.get("FirstName")
     lastName= request.POST.get("LastName")
     address= request.POST.get("Address")
-    profilepic= request.POST.get("profilepic") 
-
+    profilepic= request.FILES.get("profilepic") 
     #user = User.objects.filter(username=username)
     user = get_object_or_404(User, username=username)
-    print("User:",user)
     user.email = email
     user.first_name = firstName
     user.last_name = lastName
@@ -817,9 +815,7 @@ def updateMyInfo(request):
     userprofile.address = address
     if(profilepic!=None):
         userprofile.profile_picture = profilepic
-        print(userprofile.profile_picture)
     userprofile.save()
-    print(userprofile)
     messages.success(request,"Your info updated successfully!")
     # return HttpResponse("Updated successfully")
     return redirect("account")
