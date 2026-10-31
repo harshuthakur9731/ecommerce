@@ -540,6 +540,13 @@
 
 
 {% block body %}
+{% if messages %}
+    {% for message in messages %}
+        <div class="message {{ message.tags }}">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
 <div class="order-page">
     <div class="order-container">
 

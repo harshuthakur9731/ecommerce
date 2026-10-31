@@ -271,7 +271,7 @@ def addToCartAct(request, PCode):
                 related_order=""
             )
 
-    messages.success(request, "Product added to your cart.")
+    # messages.success(request, "Product added to your cart.")
     return redirect("cart")
 
 
@@ -498,6 +498,14 @@ def confirmorder(request, orderid):
             )
             return redirect("vieworder", orderid=orderid)
 
+        # Validate delivery address before placing the order
+        if not order_obj.delivery_address or not order_obj.delivery_address.strip():
+            messages.error(
+                request,
+                "Please provide a delivery address before confirming your order."
+            )
+            return redirect("ordersummary", orderid=orderid)
+
         # Validate payment method
         if payment_method not in ("online", "cod"):
             messages.error(request, "Please select a valid payment method.")
@@ -716,10 +724,12 @@ def changeDeliveryAdd(request, orderid):
         "Delivery address updated successfully."
     )
 
-    return redirect(request.META.get(
-        "HTTP_REFERER",
-        reverse("vieworder", kwargs={"orderid": orderid})
-    ))
+    # return redirect(request.META.get(
+    #     "HTTP_REFERER",
+    #     reverse("vieworder", kwargs={"orderid": orderid})
+    # ))
+
+    return redirect("ordersummary",orderid)
 
 @login_required
 def vieworder(request, orderid):
@@ -834,4 +844,29 @@ def view_order(request, order_id):
         request,
         "ecommstore/templates/orderdetails.html",
         {"order": order_obj},
+    )
+
+@login_required
+def ordersummary(request, orderid):
+    order_obj = get_object_or_404(
+        Order,
+        order_id=orderid,
+        user=request.user
+    )
+
+    order_items = OrderItem.objects.filter(
+        order=order_obj
+    ).select_related("product", "variant")
+
+    return render(
+        request,
+        "ecommstore/templates/ordersummary.html",
+        {
+            "order_items": enumerate(order_items),
+            "orderamount": order_obj.subtotal,
+            "shippingcharge": order_obj.shipping_charge,
+            "grandtotal": order_obj.amount,
+            "order": order_obj.order_id,
+            "order_object": order_obj,
+        }
     )

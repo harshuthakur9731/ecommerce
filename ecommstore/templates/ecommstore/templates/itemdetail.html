@@ -335,6 +335,14 @@
             <span aria-current="page">{{ name }}</span>
         </nav> -->
 
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
         <section class="product-layout" aria-label="Product overview">
             <div class="gallery">
                 <div class="gallery-main">
