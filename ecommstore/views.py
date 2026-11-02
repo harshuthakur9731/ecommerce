@@ -253,7 +253,7 @@ def addToCartAct(request, PCode):
         if current_quantity + 1 > available_stock:
             messages.warning(
                 request,
-                f"Only {available_stock} units are available."
+                f" {available_stock} units are available. Item out of stock"
             )
             return redirect("itemdetail", PCode=PCode)
 
@@ -767,6 +767,7 @@ def vieworder(request, orderid):
         {
             "order": order_obj,
             "order_items": enumerate(order_items),
+            # "order_items": order_items,
 
             # Price details
             "orderamount": order_obj.subtotal,
