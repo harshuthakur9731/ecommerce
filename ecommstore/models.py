@@ -33,6 +33,9 @@ class Product(models.Model):
 class ProductVariant(models.Model):
     product = models.ForeignKey(Product,on_delete=models.CASCADE,related_name="variants")
     variant_name = models.CharField(max_length=255)
+    image = models.ImageField(
+        upload_to="products/", blank=True, null=True
+    )
     stock = models.PositiveIntegerField(default=0)
 
     def __str__(self):

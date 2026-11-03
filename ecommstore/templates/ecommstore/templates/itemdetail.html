@@ -351,7 +351,7 @@
                         <div class="carousel-inner">
                             {% for image in images %}
                             <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                                <img src="/{{ image }}/" alt="{{ name }} — image {{ forloop.counter }}" {% if not forloop.first %}loading="lazy"{% endif %}>
+                                <img src="{{ image.url }}" alt="{{ name }} — image {{ forloop.counter }}" {% if not forloop.first %}loading="lazy"{% endif %}>
                             </div>
                             {% endfor %}
                         </div>

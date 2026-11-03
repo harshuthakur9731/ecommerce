@@ -640,11 +640,26 @@
                     {% for key, value in order_items %}
                     <tr>
                         <td>
+                            {% if value.variant %}
+                                <a href="{% url 'itemdetail' value.product.product_code %}" class="product-link">
+                                    <img
+                                        src="{{ value.variant.image.url }}"
+                                        alt="{{ value.variant.variant_name }}"
+                                        class="cart-product-image"
+                                    >
+                                </a>
+                            {% else %}
+                                <a href="{% url 'itemdetail' value.product.product_code %}" class="product-link">
+                                    <img
+                                        src="{{ value.product.image.url }}"
+                                        alt="{{ value.product.name }}"
+                                        class="cart-product-image"
+                                    >
+                                </a>
+                            {% endif %}
                             <span class="product-name">
                                 {{ value.product }}
                             </span>
-                        </td>
-                        
                         <td class="variant">
                             <span class="variant-label">
                                 {% if value.variant %}

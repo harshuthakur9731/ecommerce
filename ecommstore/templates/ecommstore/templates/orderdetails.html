@@ -582,23 +582,27 @@
                     <tbody>
                         {% for key, value in order_items %}
                             <tr>
-                                <td>
-                                    <span class="product-name">
-                                        {{ value.product }} -
-                                    </span>
-                                    {% if value.product.image %}
+                                <td>                                    
+                                    {% if value.variant %}
                                         <a href="{% url 'itemdetail' value.product.product_code %}" class="product-link">
                                             <img
-                                                src="{{ value.product.image }}"
-                                                alt="{{ value.product.name }}"
+                                                src="{{ value.variant.image.url }}"
+                                                alt="{{ value.variant.variant_name }}"
                                                 class="cart-product-image"
                                             >
                                         </a>
                                     {% else %}
-                                        <div class="cart-image-placeholder">
-                                            <span>No image</span>
-                                        </div>
+                                        <a href="{% url 'itemdetail' value.product.product_code %}" class="product-link">
+                                            <img
+                                                src="{{ value.product.image.url }}"
+                                                alt="{{ value.product.name }}"
+                                                class="cart-product-image"
+                                            >
+                                        </a>
                                     {% endif %}
+                                    <span class="product-name">
+                                        {{ value.product }}
+                                    </span> 
                                 </td>
 
                                 <td class="variant-cell">

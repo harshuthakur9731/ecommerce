@@ -408,18 +408,22 @@
                         <tr>
                             <td>
                                 <div class="cart-product">
-                                    {% if value.product.image %}
-                                        <a href="{% url 'itemdetail' value.product.product_code %}">
+                                    {% if value.variant %}
+                                        <a href="{% url 'itemdetail' value.product.product_code %}" class="product-link">
                                             <img
-                                                src="{{ value.product.image }}"
-                                                alt="{{ value.product.name }}"
+                                                src="{{ value.variant.image.url }}"
+                                                alt="{{ value.variant.variant_name }}"
                                                 class="cart-product-image"
                                             >
                                         </a>
                                     {% else %}
-                                        <div class="cart-image-placeholder">
-                                            <span>No image</span>
-                                        </div>
+                                        <a href="{% url 'itemdetail' value.product.product_code %}" class="product-link">
+                                            <img
+                                                src="{{ value.product.image.url }}"
+                                                alt="{{ value.product.name }}"
+                                                class="cart-product-image"
+                                            >
+                                        </a>
                                     {% endif %}
 
                                     <div>
