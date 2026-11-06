@@ -1,0 +1,455 @@
+{% extends 'base.html' %}
+
+{% block title %}My Order History{% endblock %}
+
+{% block content %}
+
+<style>
+    .order-history {
+        max-width: 1150px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .history-heading {
+        margin-bottom: 30px;
+    }
+
+    .history-heading h2 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #222;
+        margin-bottom: 8px;
+    }
+
+    .history-heading p {
+        color: #777;
+        font-size: 14px;
+    }
+
+    .order-card {
+        background: #fff;
+        border: 1px solid #e8e8e8;
+        border-radius: 12px;
+        margin-bottom: 25px;
+        overflow: hidden;
+        box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+    }
+
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #eee;
+    }
+
+    .order-id {
+        font-size: 15px;
+        font-weight: 700;
+        color: #222;
+        word-break: break-word;
+    }
+
+    .order-date {
+        display: block;
+        color: #777;
+        font-size: 13px;
+        margin-top: 6px;
+    }
+
+    .order-badges {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .badge-status {
+        display: inline-block;
+        padding: 7px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        background: #e8f3ff;
+        color: #1769aa;
+    }
+
+    .badge-paid {
+        background: #e7f8ed;
+        color: #21834a;
+    }
+
+    .badge-pending {
+        background: #fff4db;
+        color: #a56a00;
+    }
+
+    .badge-failed {
+        background: #fde8e8;
+        color: #c62828;
+    }
+
+    .order-products {
+        padding: 10px 20px;
+    }
+
+    .product-row {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 16px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .product-row:last-child {
+        border-bottom: none;
+    }
+
+    .product-image {
+        width: 80px;
+        height: 85px;
+        object-fit: contain;
+        border-radius: 8px;
+        background: #f7f7f7;
+    }
+
+    .product-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .product-info h4 {
+        font-size: 15px;
+        font-weight: 600;
+        margin: 0 0 8px;
+        color: #222;
+    }
+
+    .product-info p {
+        font-size: 13px;
+        color: #777;
+        margin: 4px 0;
+    }
+
+    .product-price {
+        font-weight: 700;
+        font-size: 15px;
+        white-space: nowrap;
+        color: #222;
+    }
+
+    .order-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+        padding: 20px;
+        background: #fafafa;
+        border-top: 1px solid #eee;
+    }
+
+    .delivery-info p {
+        font-size: 13px;
+        color: #666;
+        margin: 5px 0;
+    }
+
+    .order-total {
+        text-align: right;
+    }
+
+    .order-total span {
+        font-size: 13px;
+        color: #777;
+    }
+
+    .order-total h3 {
+        font-size: 23px;
+        font-weight: 700;
+        margin: 5px 0 0;
+        color: #222;
+    }
+
+    .empty-orders {
+        text-align: center;
+        padding: 65px 20px;
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 12px;
+    }
+
+    .empty-orders i {
+        font-size: 55px;
+        color: #ccc;
+        margin-bottom: 15px;
+    }
+
+    .empty-orders h3 {
+        font-size: 22px;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .empty-orders p {
+        color: #777;
+        font-size: 14px;
+    }
+
+    .shop-btn {
+        display: inline-block;
+        margin-top: 15px;
+        padding: 11px 25px;
+        background: #222;
+        color: #fff;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: 0.3s;
+    }
+
+    .shop-btn:hover {
+        background: #444;
+        color: #fff;
+    }
+
+    @media(max-width: 600px) {
+        .history-heading h2 {
+            font-size: 23px;
+        }
+
+        .order-history {
+            padding: 0 12px;
+        }
+
+        .order-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .product-row {
+            gap: 10px;
+        }
+
+        .product-image {
+            width: 60px;
+            height: 70px;
+        }
+
+        .product-info h4 {
+            font-size: 13px;
+        }
+
+        .product-info p {
+            font-size: 12px;
+        }
+
+        .product-price {
+            font-size: 13px;
+        }
+
+        .order-footer {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .order-total {
+            text-align: left;
+        }
+    }
+    .order-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        background: #fafafa;
+        gap: 15px;
+    }
+
+    .view-details-btn {
+        display: inline-block;
+        padding: 10px 22px;
+        background: #222;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: 0.3s;
+    }
+
+    .view-details-btn:hover {
+        background: #444;
+        color: white;
+    }
+</style>
+
+
+<div class="order-history">
+
+    <div class="history-heading">
+        <h2>My Orders</h2>
+        <p>View and track all your previous orders.</p>
+    </div>
+
+
+    {% if orders %}
+
+        {% for order in orders %}
+
+        <div class="order-card">
+
+            <!-- Order Header -->
+            <div class="order-header">
+
+                <div>
+                    <div class="order-id">
+                        <a href="{% url 'vieworder' order.order_id %}">Order #{{ order.order_id }}</a>
+                    </div>
+
+                    <span class="order-date">
+                        Placed on {{ order.created_date|date:"d M Y, h:i A" }}
+                    </span>
+                </div>
+
+                <div class="order-badges">
+
+                    <span class="badge-status">
+                        {{ order.status|title }}
+                    </span>
+
+                    <span class="badge-status
+                        {% if order.payment_status == 'paid' %}
+                            badge-paid
+                        {% elif order.payment_status == 'failed' %}
+                            badge-failed
+                        {% else %}
+                            badge-pending
+                        {% endif %}">
+                        Payment: {{ order.payment_status|title }}
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- Products -->
+            <div class="order-products">
+
+                {% for item in order.items.all %}
+
+                <div class="product-row">
+
+                    {% if item.product.image %}
+                        <img
+                            src="{{ item.product.image.url }}"
+                            alt="{{ item.product.name }}"
+                            class="product-image">
+                    {% endif %}
+
+                    <div class="product-info">
+
+                        <h4>{{ item.product.name }}</h4>
+
+                        {% if item.variant %}
+                            <p>Variant: {{ item.variant.variant_name }}</p>
+                        {% endif %}
+
+                        <p>Quantity: {{ item.quantity }}</p>
+
+                        <p>Price: ₹{{ item.unitprice }}</p>
+
+                    </div>
+
+                    <div class="product-price">
+                        ₹{{ item.amount }}
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+
+            <!-- Order Footer -->
+            <div class="order-footer">
+
+                <div class="delivery-info">
+
+                    <p>
+                        Payment Method:
+                        <strong>{{ order.get_payment_method_display }}</strong>
+                    </p>
+
+                    <p>
+                        Shipping:
+                        <strong>₹{{ order.shipping_charge }}</strong>
+                    </p>
+
+                    <p>
+                        Subtotal:
+                        <strong>₹{{ order.subtotal }}</strong>
+                    </p>
+
+                    <p>
+                        Delivery Address:
+                        <strong>{{ order.delivery_address }}</strong>
+                    </p>
+
+                </div>
+
+                <div class="order-total">
+
+                    <span>Total Order Amount</span>
+
+                    <h3>₹{{ order.amount }}</h3>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="order-footer">
+
+            <div class="order-total">
+                <span>Total Order Amount</span>
+                <h3>₹{{ order.amount }}</h3>
+            </div>
+
+            <a href="{% url 'vieworder' order.order_id %}"
+            class="view-details-btn">
+                View Details
+            </a>
+
+        </div>
+        {% endfor %}
+
+    {% else %}
+
+        <!-- Empty Order History -->
+        <div class="empty-orders">
+
+            <i class="fa fa-shopping-bag"></i>
+
+            <h3>No Orders Yet!</h3>
+
+            <p>
+                You haven't placed any orders yet.
+                Start shopping and your orders will appear here.
+            </p>
+
+            <a href="{% url 'shop' %}" class="shop-btn">
+                Continue Shopping
+            </a>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

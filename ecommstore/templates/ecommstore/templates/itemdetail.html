@@ -321,7 +321,136 @@
     .product-detail-page .spec-table th {
         width: 40%;
     }
-}
+    }
+
+    /* Product Variant Selector */
+    .product-detail-page .variant-selector {
+        margin: 25px 0 18px;
+    }
+
+    .product-detail-page .variant-label {
+        display: block;
+        margin-bottom: 10px;
+        color: #171717;
+        font-size: .9rem;
+        font-weight: 750;
+    }
+
+    .product-detail-page .variant-select-wrap {
+        position: relative;
+        width: 100%;
+    }
+
+    .product-detail-page .variant-select {
+        display: block;
+        width: 100%;
+        min-height: 54px;
+        padding: 13px 45px 13px 16px;
+        appearance: none;
+        -webkit-appearance: none;
+        border: 1px solid #dedede;
+        border-radius: 10px;
+        outline: none;
+        background-color: #fff;
+        color: #171717;
+        font-family: inherit;
+        font-size: .95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .product-detail-page .variant-select-wrap::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        right: 18px;
+        width: 9px;
+        height: 9px;
+        border-right: 2px solid #555;
+        border-bottom: 2px solid #555;
+        transform: translateY(-70%) rotate(45deg);
+        pointer-events: none;
+    }
+
+    .product-detail-page .variant-select:hover {
+        border-color: #999;
+    }
+
+    .product-detail-page .variant-select:focus {
+        border-color: #171717;
+        box-shadow: 0 0 0 3px rgba(23, 23, 23, .08);
+    }
+
+    .product-detail-page .variant-select option {
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    .product-detail-page .variant-help {
+        display: block;
+        margin-top: 8px;
+        color: #777;
+        font-size: .78rem;
+    }
+
+    /* Carousel Indicators */
+    .product-detail-page .gallery-indicators {
+        margin-bottom: 14px;
+        gap: 7px;
+        z-index: 5;
+    }
+
+    .product-detail-page .gallery-indicators button {
+        width: 9px;
+        height: 9px;
+        margin: 0 3px;
+        border: 0;
+        border-radius: 50%;
+        background-color: #777;
+        opacity: .45;
+        transition: all .25s ease;
+    }
+
+    .product-detail-page .gallery-indicators button.active {
+        width: 25px;
+        border-radius: 10px;
+        background-color: #171717;
+        opacity: 1;
+    }
+
+    /* Carousel Navigation */
+    .product-detail-page .gallery-control {
+        width: 43px;
+        height: 43px;
+        top: 50%;
+        bottom: auto;
+        margin: 0 13px;
+        transform: translateY(-50%);
+        border-radius: 50%;
+        background: rgba(23, 23, 23, .75);
+        opacity: .85;
+        transition: all .25s ease;
+    }
+
+    .product-detail-page .gallery-control:hover {
+        background: #171717;
+        opacity: 1;
+        transform: translateY(-50%) scale(1.08);
+    }
+
+    .product-detail-page .gallery-control .carousel-control-prev-icon,
+    .product-detail-page .gallery-control .carousel-control-next-icon {
+        width: 17px;
+        height: 17px;
+    }
+
+    .product-detail-page .gallery-count {
+        margin: 12px 2px 0;
+        color: #777;
+        font-size: .82rem;
+        text-align: center;
+    }
 {% endblock %}
 
 {% block body %}
@@ -347,38 +476,66 @@
             <div class="gallery">
                 <div class="gallery-main">
                     {% if images %}
-                    <div id="productGallery" class="carousel slide" data-bs-interval="false">
-                        <div class="carousel-inner">
-                            {% for image in images %}
-                            <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                                <img src="{{ image.url }}" alt="{{ name }} — image {{ forloop.counter }}" {% if not forloop.first %}loading="lazy"{% endif %}>
-                            </div>
-                            {% endfor %}
-                        </div>
+                        <div id="productGallery"
+                            class="carousel slide"
+                            data-bs-ride="carousel"
+                            data-bs-interval="4000"
+                            data-bs-pause="hover"
+                            data-bs-touch="true"
+                            data-bs-keyboard="true">
 
-                        {% if images|length > 1 %}
-                        <button class="carousel-control-prev gallery-control" type="button"
-                                data-bs-target="#productGallery" data-bs-slide="prev"
-                                aria-label="Previous product image">
-                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        </button>
-                        <button class="carousel-control-next gallery-control" type="button"
-                                data-bs-target="#productGallery" data-bs-slide="next"
-                                aria-label="Next product image">
-                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        </button>
-                        {% endif %}
-                    </div>
-                    {% else %}
-                    <div class="gallery-main">
-                        <img src="https://placehold.co/700x800/f7f7f5/777?text=No+Product+Image"
-                             alt="No image available for {{ name }}"
-                             style="display:block;width:100%;aspect-ratio:4/4.5;object-fit:contain;padding:24px;">
-                    </div>
+                            <!-- Carousel Indicators -->
+                            {% if images|length > 1 %}
+                            <div class="carousel-indicators gallery-indicators">
+                                {% for image in images %}
+                                    <button type="button"
+                                            data-bs-target="#productGallery"
+                                            data-bs-slide-to="{{ forloop.counter0 }}"
+                                            class="{% if forloop.first %}active{% endif %}"
+                                            {% if forloop.first %}aria-current="true"{% endif %}
+                                            aria-label="Go to image {{ forloop.counter }}">
+                                    </button>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
+                            <!-- Carousel Images -->
+                            <div class="carousel-inner">
+                                {% for image in images %}
+                                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                        <img
+                                            src="{{ image.url }}"
+                                            alt="{{ name }} — image {{ forloop.counter }}"
+                                            {% if not forloop.first %}loading="lazy"{% endif %}
+                                        >
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Previous Button -->
+                            {% if images|length > 1 %}
+                            <button class="carousel-control-prev gallery-control"
+                                    type="button"
+                                    data-bs-target="#productGallery"
+                                    data-bs-slide="prev"
+                                    aria-label="Previous product image">
+                                <span class="carousel-control-prev-icon"aria-hidden="true"></span>
+                            </button>
+
+                            <!-- Next Button -->
+                            <button class="carousel-control-next gallery-control"
+                                    type="button"
+                                    data-bs-target="#productGallery"
+                                    data-bs-slide="next"
+                                    aria-label="Next product image">
+                                <span class="carousel-control-next-icon"aria-hidden="true"></span>
+                            </button>
+                            {% endif %}
+                        </div>
                     {% endif %}
                 </div>
                 {% if images|length > 1 %}
-                <p class="gallery-count">Use the arrows to view more product images.</p>
+                    <p class="gallery-count">Images change automatically · Use arrows or dots to navigate</p>
                 {% endif %}
             </div>
 
@@ -399,27 +556,44 @@
                 {% csrf_token %}
 
                 {% if has_variants %}
-                    <label for="variant_id">Select Color / Size</label>
+                    <div class="variant-selector">
+                        <label for="variant_id" class="variant-label">
+                            Select Color / Size
+                        </label>
 
-                    <select name="variant_id" id="variant_id" required>
-                        <option value="">Choose an option</option>
+                        <div class="variant-select-wrap">
+                            <select name="variant_id"
+                                    id="variant_id"
+                                    class="variant-select"
+                                    required>
 
-                        {% for variant in variants %}
-                            <option
-                                value="{{ variant.id }}"
-                                {% if variant.stock == 0 %}disabled{% endif %}
-                            >
-                                {{ variant.variant_name }}
-                                {% if variant.stock == 0 %}
-                                    - Out of Stock
-                                {% else %}
-                                    - {{ variant.stock }} available
-                                {% endif %}
-                            </option>
-                        {% endfor %}
-                    </select>
+                                <option value="" selected disabled>
+                                    Choose your preferred option
+                                </option>
+
+                                {% for variant in variants %}
+                                    <option
+                                        value="{{ variant.id }}"
+                                        {% if variant.stock == 0 %}disabled{% endif %}
+                                    >
+                                        {{ variant.variant_name }}
+                                        {% if variant.stock == 0 %}
+                                            — Out of Stock
+                                        {% else %}
+                                            — {{ variant.stock }} available
+                                        {% endif %}
+                                    </option>
+                                {% endfor %}
+
+                            </select>
+                        </div>
+
+                        <small class="variant-help">
+                            Please select an available variant before adding to cart.
+                        </small>
+                    </div>
                 {% endif %}
-
+                
                 <button class="add-cart-button" type="submit">
                     ADD TO CART
                 </button>
@@ -462,8 +636,8 @@
     </div>
 </div>
 {% endblock %}
-'''
+<!-- '''
 
 out = Path("/mnt/data/itemdetail.html")
 out.write_text(template, encoding="utf-8")
-print(f"Created {out} ({out.stat().st_size} bytes)")
+print(f"Created {out} ({out.stat().st_size} bytes)") -->

@@ -175,6 +175,10 @@ def cart(request):
     total_amount = Decimal("0.00")
 
     for item in cart_items:
+
+        # Always fetch the latest product price
+        item.price = item.product.price
+
         item.amount = item.quantity * item.price
         total_amount += item.amount
 
@@ -398,7 +402,8 @@ def order(request):
             order_id=order_id,
             user=request.user,
             status="created",
-            delivery_address=delivery_address
+            delivery_address=delivery_address,
+            
         )
 
         order_lines = []
@@ -406,6 +411,8 @@ def order(request):
 
         # Create order items
         for item in cart_items:
+            #always fetch the latest item prices
+            item.price = item.product.price
 
             item_amount = item.price * item.quantity
 
@@ -416,7 +423,8 @@ def order(request):
                     variant=item.variant,
                     quantity=item.quantity,
                     unitprice=item.price,
-                    amount=item_amount
+                    amount=item_amount,
+                    return_eligible=item.product.is_returnable
                 )
             )
 
@@ -611,10 +619,12 @@ def confirmorder(request, orderid):
         # order_obj.payment_method = "cod"
 
         order_obj.status = "placed"
+        order_obj.tracking_status = "placed"
+        order_obj.placed_at=timezone.now()
         order_obj.updated_date = timezone.now()
 
         order_obj.save(
-            update_fields=["status", "updated_date"]
+            update_fields=["status","tracking_status","updated_date","placed_at"]
         )
 
         CartItem.objects.filter(
@@ -680,7 +690,8 @@ def cancelorder(request, orderid):
 
         order_obj.status = "cancelled"
         order_obj.updated_date = timezone.now()
-        order_obj.save(update_fields=["status", "updated_date"])
+        order_obj.tracking_status = "cancelled"
+        order_obj.save(update_fields=["status", "updated_date","tracking_status"])
 
         CartItem.objects.filter(
             user=request.user,
@@ -741,12 +752,93 @@ def vieworder(request, orderid):
         user=request.user
     )
 
+    if order_obj.tracking_status == "placed":
+        order_obj.status = "placed"
+
+    if order_obj.tracking_status == "shipped":
+        order_obj.status = "shipped"
+    
+    if order_obj.tracking_status == "delivered":
+        order_obj.status = "delivered"
+
+    order_obj.save(update_fields=["status"])
     # Fetch order items with product and variant details
     order_items = (
         OrderItem.objects.filter(order=order_obj)
         .select_related("product", "variant")
         .order_by("id")
     )
+
+    delivery_steps = [
+        {
+            'key': 'created',
+            'label': 'Order Created',
+            'date': order_obj.created_date,
+        },
+        {
+            'key': 'placed',
+            'label': 'Order Placed',
+            'date': order_obj.placed_at,
+        },
+        {
+            'key': 'processing',
+            'label': 'Processing',
+            'date': order_obj.processing_at,
+        },
+        {
+            'key': 'shipped',
+            'label': 'Shipped',
+            'date': order_obj.shipped_at,
+        },
+        {
+            'key': 'out_for_delivery',
+            'label': 'Out for Delivery',
+            'date': order_obj.out_for_delivery_at,
+        },
+        {
+            'key': 'delivered',
+            'label': 'Delivered',
+            'date': order_obj.delivered_at,
+        },
+    ]
+
+    return_steps = [
+        {
+            'key': 'requested',
+            'label': 'Return Requested',
+            'date': order_obj.return_requested_at,
+        },
+        {
+            'key': 'approved',
+            'label': 'Return Approved',
+            'date': order_obj.return_approved_at,
+        },
+        {
+            'key': 'pickup_scheduled',
+            'label': 'Pickup Scheduled',
+            'date': order_obj.pickup_scheduled_at,
+        },
+        {
+            'key': 'picked_up',
+            'label': 'Item Picked Up',
+            'date': order_obj.return_picked_up_at,
+        },
+        {
+            'key': 'received',
+            'label': 'Item Received',
+            'date': order_obj.return_received_at,
+        },
+        {
+            'key': 'refund_processing',
+            'label': 'Refund Processing',
+            'date': order_obj.refund_processing_at,
+        },
+        {
+            'key': 'refunded',
+            'label': 'Refunded',
+            'date': order_obj.refunded_at,
+        },
+    ]
 
     # Calculate cancellation eligibility
     elapsed = timezone.now() - order_obj.created_date
@@ -760,6 +852,14 @@ def vieworder(request, orderid):
     profile = UserProfile.objects.filter(
         user=request.user
     ).first()
+
+    # Calculate the 7-day return deadline
+    return_deadline = None
+    return_window_open = False
+
+    if order_obj.delivered_at:
+        return_deadline = order_obj.delivered_at + timedelta(days=7)
+        return_window_open = timezone.now() <= return_deadline
 
     return render(
         request,
@@ -781,6 +881,10 @@ def vieworder(request, orderid):
             "profilepicture": (
                 profile.profile_picture if profile else ""
             ),
+            "delivery_steps": delivery_steps,
+            "return_steps": return_steps,
+            "return_window_open": return_window_open,
+            "return_deadline":return_deadline,
         }
     )
 
@@ -834,9 +938,7 @@ def updateMyInfo(request):
 @login_required
 def view_order(request, order_id):
     order_obj = get_object_or_404(
-        Order.objects.prefetch_related(
-            "orderitem_set__product"
-        ),
+        Order,
         order_id=order_id,
         user=request.user,
     )
@@ -871,3 +973,78 @@ def ordersummary(request, orderid):
             "order_object": order_obj,
         }
     )
+
+@login_required
+def orderHistory(request):
+    # orders = (
+    #     Order.objects
+    #     .filter(user=request.user)
+    #     .prefetch_related(
+    #         "items",
+    #         "order_items_variants"
+    #     )
+    #     .order_by("-created_date")
+    # )
+    orders = (
+        Order.objects
+        .filter(user=request.user)
+        .order_by("-created_date")
+    )
+
+    return render(request, "ecommstore/templates/orderhistory.html", {
+        "orders": orders
+    })
+
+@login_required
+@require_POST
+def request_product_return(request, orderid, itemid):
+
+    order_obj = get_object_or_404(
+        Order,
+        order_id=orderid,
+        user=request.user
+    )
+
+    order_item = get_object_or_404(
+        OrderItem,
+        id=itemid,
+        order=order_obj
+    )
+
+    reason = request.POST.get('return_reason', '').strip()
+
+    # Check whether the order has been delivered
+    if order_obj.tracking_status != 'delivered' or not order_obj.delivered_at:
+        messages.error(request,"You can request a return only after delivery.")
+        return redirect('vieworder', orderid=orderid)
+
+    # Check the 7-day return deadline
+    deadline = order_obj.delivered_at + timedelta(days=7)
+
+    if timezone.now() > deadline:
+        messages.error(request,"The 7-day return period has expired.")
+        return redirect('vieworder', orderid=orderid)
+
+    # Check product return eligibility
+    if not order_item.return_eligible:
+        messages.error(request,"This product is not eligible for return.")
+        return redirect('vieworder', orderid=orderid)
+
+    # Prevent duplicate requests
+    if order_item.return_status != 'not_requested':
+        messages.error(request,"A return request already exists for this product.")
+        return redirect('vieworder', orderid=orderid)
+
+    if not reason:
+        messages.error(request,"Please select a return reason.")
+        return redirect('vieworder', orderid=orderid)
+
+    order_item.return_status = 'requested'
+    order_item.return_reason = reason
+    order_item.return_requested_at = timezone.now()
+
+    order_item.save(update_fields=['return_status','return_reason','return_requested_at'])
+
+    messages.success(request,"Your return request has been submitted successfully.")
+
+    return redirect('vieworder', orderid=orderid)
