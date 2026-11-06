@@ -614,14 +614,14 @@
                 <div class="order-info-value">Your selected products</div>
             </div>
 
-            <form method="POST"
+            <!-- <form method="POST"
                   action="{% url 'cancelorder' order.order_id|default:order %}"
                   onsubmit="return confirm('Are you sure you want to cancel this order?');">
                 {% csrf_token %}
                 <button type="submit" class="cancel-order-btn">
                     Cancel Order
                 </button>
-            </form>
+            </form> -->
         </div>
 
         <div class="table-wrapper">
