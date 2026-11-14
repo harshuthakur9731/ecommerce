@@ -984,6 +984,26 @@
                 </div>
             </div>
 
+            <!-- Customer Contact Number -->
+            <h3 class="section-heading">Contact Information</h3>
+
+            <div class="delivery-card">
+                <div class="delivery-heading">
+                    <h3>📞 Delivery Contact Number</h3>
+                    <span>☎️</span>
+                </div>
+
+                <div class="delivery-address">
+                    {% if order.delivery_phone %}
+                        {{ order.delivery_phone }}
+                    {% else %}
+                        <span class="no-address">
+                            No contact phone number was saved.
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+
             <!-- Product Details -->
             <h3 class="section-heading">Ordered Products</h3>
 

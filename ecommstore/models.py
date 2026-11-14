@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.core.validators import RegexValidator
 
 # Create your models here.
 
@@ -59,6 +60,11 @@ class Order(models.Model):
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now_add=True)
     delivery_address = models.TextField(blank=True, default="")
+    delivery_phone = models.CharField(max_length=16,validators=[
+        RegexValidator(
+            regex=r'^\+?[0-9]{10,15}$',
+            message="Enter a valid phone number (10-15 digits)."
+            )],blank=True, default="")
     subtotal = models.DecimalField(max_digits=11, decimal_places=2, default=0)
     shipping_charge = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     payment_method = models.CharField(max_length=20,
@@ -237,6 +243,12 @@ class CartItem(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE)
     address = models.TextField()
+    phone = models.CharField(max_length=15,
+    validators=[
+        RegexValidator(
+            regex=r'^\+?[0-9]{10,15}$',
+            message="Enter a valid phone number (10-15 digits)."
+            )],blank=True, null=True)
     profile_picture = models.ImageField(upload_to="profile_pictures/",blank=True,null=True,)
 
     def __str__(self):

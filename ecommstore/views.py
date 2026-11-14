@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.utils import timezone
 from datetime import timedelta
+from django.core.exceptions import ValidationError
 from django.db.models import Q
 import logging
 import uuid
@@ -90,6 +91,7 @@ def account(request):
         else ""
     )
     address = userprofile.address if userprofile else ""
+    phone = userprofile.phone if userprofile else ""
 
     myOrders = Order.objects.filter(
         user=request.user
@@ -101,6 +103,7 @@ def account(request):
         {
             "profilepicture": profilepicture,
             "address": address,
+            "phone" : phone,
             "myOrders": myOrders,
         },
     )
@@ -482,6 +485,7 @@ def order(request):
             "grandtotal": grand_total,
             "order": new_order.order_id,
             "order_object": new_order,
+            "phone": profile.phone if profile else "",
         }
     )
 
@@ -506,11 +510,32 @@ def confirmorder(request, orderid):
             )
             return redirect("vieworder", orderid=orderid)
 
-        # Validate delivery address before placing the order
+        # Validate delivery address
         if not order_obj.delivery_address or not order_obj.delivery_address.strip():
             messages.error(
                 request,
                 "Please provide a delivery address before confirming your order."
+            )
+            return redirect("ordersummary", orderid=orderid)
+
+        # Validate customer phone number
+        phone = (order_obj.delivery_phone or "").strip()
+
+        if not phone:
+            messages.error(
+                request,
+                "Please add a delivery phone number before confirming your order."
+            )
+            return redirect("ordersummary", orderid=orderid)
+
+        phone_field = Order._meta.get_field("delivery_phone")
+
+        try:
+            phone_field.clean(phone, order_obj)
+        except ValidationError:
+            messages.error(
+                request,
+                "Please enter a valid delivery phone number."
             )
             return redirect("ordersummary", orderid=orderid)
 
@@ -519,20 +544,8 @@ def confirmorder(request, orderid):
             messages.error(request, "Please select a valid payment method.")
             return redirect("vieworder", orderid=orderid)
 
-        # COD eligibility: subtotal must be <= ₹699
-        if (
-            payment_method == "cod"
-            and order_obj.subtotal > Decimal("699.00")
-        ):
-            messages.error(
-                request,
-                "Cash on Delivery is not available for orders above ₹699. "
-                "Please choose online payment."
-            )
-            return redirect("vieworder", orderid=orderid)
-
-        # Online payment must go through a payment gateway.
-        # Do not place the order or deduct stock before payment verification.
+        # Online payment must be handled through payment gateway.
+        # Recalculate its amount in the payment initiation flow too.
         if payment_method == "online":
             messages.info(
                 request,
@@ -550,22 +563,41 @@ def confirmorder(request, orderid):
             messages.error(request, "This order has no items.")
             return redirect("cart")
 
-        # First validate all stock. Do not deduct anything yet.
         stock_records = []
+        price_updates = []
+        new_subtotal = Decimal("0.00")
+        price_changes = []
 
+        # Validate stock and calculate latest product prices.
         for order_item in order_items:
+
+            product = Product.objects.select_for_update().get(
+                product_code=order_item.product_id
+            )
+
+            latest_price = product.price
+
+            old_price = order_item.unitprice
+
+            if old_price != latest_price:
+                price_changes.append({
+                    "product": product.name,
+                    "old_price": old_price,
+                    "new_price": latest_price,
+                    "quantity": order_item.quantity,
+                })
 
             if order_item.variant_id:
 
                 variant = ProductVariant.objects.select_for_update().filter(
                     id=order_item.variant_id,
-                    product=order_item.product
+                    product=product
                 ).first()
 
                 if not variant:
                     messages.error(
                         request,
-                        f"The selected variant for {order_item.product.name} "
+                        f"The selected variant for {product.name} "
                         "is no longer available."
                     )
                     return redirect("vieworder", orderid=orderid)
@@ -573,7 +605,7 @@ def confirmorder(request, orderid):
                 if variant.stock < order_item.quantity:
                     messages.error(
                         request,
-                        f"Insufficient stock for {order_item.product.name} "
+                        f"Insufficient stock for {product.name} "
                         f"({variant.variant_name}). Available: {variant.stock}."
                     )
                     return redirect("vieworder", orderid=orderid)
@@ -584,11 +616,6 @@ def confirmorder(request, orderid):
 
             else:
 
-                product = Product.objects.select_for_update().get(
-                    product_code=order_item.product_id
-                )
-
-                # A product with variants must have a selected variant.
                 if ProductVariant.objects.filter(product=product).exists():
                     messages.error(
                         request,
@@ -609,30 +636,102 @@ def confirmorder(request, orderid):
                     ("product", product, order_item.quantity)
                 )
 
-        # All lines passed validation. Now deduct stock.
+            # Calculate using the latest product price.
+            line_total = latest_price * order_item.quantity
+
+            price_updates.append(
+                (order_item, latest_price, line_total)
+            )
+
+            new_subtotal += line_total
+
+        # Recalculate shipping using the updated subtotal.
+        new_shipping = (
+            Decimal("0.00")
+            if new_subtotal > Decimal("699.00")
+            else Decimal("50.00")
+        )
+
+        new_total = new_subtotal + new_shipping
+
+        # Revalidate COD eligibility using the UPDATED subtotal.
+        if payment_method == "cod" and new_subtotal > Decimal("699.00"):
+            messages.error(
+                request,
+                "Cash on Delivery is not available for orders above ₹699 "
+                "after the latest price update. Please choose online payment."
+            )
+            return redirect("vieworder", orderid=orderid)
+
+        # All validations passed. Save the latest price snapshots.
+        for order_item, latest_price, line_total in price_updates:
+
+            order_item.unitprice = latest_price
+            order_item.amount = line_total
+
+            order_item.save(
+                update_fields=["unitprice", "amount"]
+            )
+
+        # Deduct stock.
         for record_type, record, quantity in stock_records:
+
             record.stock -= quantity
             record.save(update_fields=["stock"])
 
-        # Store payment method if your Order model has this field.
-        # Add payment_method to the model before uncommenting this line.
-        # order_obj.payment_method = "cod"
+        # Update order totals.
+        order_obj.subtotal = new_subtotal
+        order_obj.shipping_charge = new_shipping
+        order_obj.amount = new_total
 
         order_obj.status = "placed"
         order_obj.tracking_status = "placed"
-        order_obj.placed_at=timezone.now()
+        order_obj.placed_at = timezone.now()
         order_obj.updated_date = timezone.now()
 
         order_obj.save(
-            update_fields=["status","tracking_status","updated_date","placed_at"]
+            update_fields=[
+                "subtotal",
+                "shipping_charge",
+                "amount",
+                "status",
+                "tracking_status",
+                "updated_date",
+                "placed_at",
+            ]
         )
 
+        # Remove cart items associated with this order.
         CartItem.objects.filter(
             user=request.user,
             related_order=orderid
         ).delete()
 
-    messages.success(request, "Order placed successfully!")
+    if price_changes:
+
+        change_details = []
+
+        for change in price_changes:
+            change_details.append(
+                f"{change['product']}: ₹{change['old_price']} → "
+                f"₹{change['new_price']} (Qty: {change['quantity']})"
+            )
+
+        messages.warning(
+            request,
+            "Product prices changed since checkout. "
+            "Your order has been updated with the latest prices. "
+            + " | ".join(change_details)
+        )
+
+        messages.success(request, "Order placed successfully!")
+
+    else:
+        messages.success(
+            request,
+            "Order placed successfully! Product prices remain unchanged."
+        )
+        
     return redirect("vieworder", orderid=orderid)
 
 @login_required
@@ -741,6 +840,43 @@ def changeDeliveryAdd(request, orderid):
     # ))
 
     return redirect("ordersummary",orderid)
+
+@login_required
+@require_POST
+def changeDeliveryPhone(request, orderid):
+
+    order_obj = get_object_or_404(
+        Order,
+        order_id=orderid,
+        user=request.user
+    )
+
+    if order_obj.status != "created":
+        messages.error(
+            request,
+            "Phone number can only be changed before order confirmation."
+        )
+        return redirect("ordersummary", orderid=orderid)
+
+    phone = request.POST.get("phone", "").strip()
+
+    phone_field = Order._meta.get_field("delivery_phone")
+
+    try:
+        phone_field.clean(phone, order_obj)
+    except ValidationError as error:
+        messages.error(request, " ".join(error.messages))
+        return redirect("ordersummary", orderid=orderid)
+
+    order_obj.delivery_phone = phone
+    order_obj.save(update_fields=["delivery_phone"])
+
+    messages.success(
+        request,
+        "Delivery phone number updated successfully!"
+    )
+
+    return redirect("ordersummary", orderid=orderid)
 
 @login_required
 def vieworder(request, orderid):
@@ -881,6 +1017,7 @@ def vieworder(request, orderid):
             "profilepicture": (
                 profile.profile_picture if profile else ""
             ),
+            "phone": profile.phone if profile else "",
             "delivery_steps": delivery_steps,
             "return_steps": return_steps,
             "return_window_open": return_window_open,
@@ -919,6 +1056,7 @@ def updateMyInfo(request):
     firstName= request.POST.get("FirstName")
     lastName= request.POST.get("LastName")
     address= request.POST.get("Address")
+    phone= request.POST.get("Phone")
     profilepic= request.FILES.get("profilepic") 
     #user = User.objects.filter(username=username)
     user = get_object_or_404(User, username=username)
@@ -927,6 +1065,7 @@ def updateMyInfo(request):
     user.last_name = lastName
     user.save()
     userprofile = get_object_or_404(UserProfile, user=user)
+    userprofile.phone = phone
     userprofile.address = address
     if(profilepic!=None):
         userprofile.profile_picture = profilepic
@@ -957,6 +1096,8 @@ def ordersummary(request, orderid):
         user=request.user
     )
 
+    profile = UserProfile.objects.filter(user=request.user).first()
+
     order_items = OrderItem.objects.filter(
         order=order_obj
     ).select_related("product", "variant")
@@ -971,6 +1112,7 @@ def ordersummary(request, orderid):
             "grandtotal": order_obj.amount,
             "order": order_obj.order_id,
             "order_object": order_obj,
+            "phone": order_obj.delivery_phone or "",
         }
     )
 

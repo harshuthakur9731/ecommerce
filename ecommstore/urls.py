@@ -24,6 +24,7 @@ urlpatterns = [
     path('confirmorder/<slug:orderid>',views.confirmorder,name="confirmorder"),
     path('cancelorder/<slug:orderid>',views.cancelorder,name="cancelorder"),
     path('changeDeliveryAdd/<slug:orderid>',views.changeDeliveryAdd,name="changeDeliveryAdd"),
+    path('change-delivery-phone/<str:orderid>/',views.changeDeliveryPhone,name="changeDeliveryPhone"),
     path('vieworder/<slug:orderid>',views.vieworder,name="vieworder"),
     path('updateMyInfo',views.updateMyInfo,name="updateMyInfo"),
     path('ordersummary/<str:orderid>/',views.ordersummary,name="ordersummary"),

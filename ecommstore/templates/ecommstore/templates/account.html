@@ -621,6 +621,23 @@
                                 >
                             </div>
 
+                            <div class="form-field">
+                                <label for="Phone">Phone Number</label>
+                                <input
+                                    type="tel"
+                                    id="Phone"
+                                    name="Phone"
+                                    value="{{phone|default:'' }}"
+                                    placeholder="Enter 10-digit mobile number"
+                                    autocomplete="tel"
+                                    inputmode="numeric"
+                                    pattern="[6-9][0-9]{9}"
+                                    maxlength="10"
+                                    minlength="10"
+                                    required
+                                >
+                            </div>
+
                             <div class="form-field full-width">
                                 <label for="Address">Address</label>
                                 <input

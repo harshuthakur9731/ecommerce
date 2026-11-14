@@ -565,6 +565,49 @@
 
         <div class="delivery-card">
             <div class="delivery-card-header">
+                <h3>Contact Phone Number</h3>
+            </div>
+
+            {% if phone %}
+                <p class="delivery-address">
+                    {{ phone }}
+                </p>
+            {% else %}
+                <p class="missing-address">
+                    No phone number added. Please add your contact number.
+                </p>
+            {% endif %}
+
+            {% if order_object.status == "created" %}
+                <details class="change-address">
+                    <summary>
+                        {% if phone %}Change Phone Number{% else %}Add Phone Number{% endif %}
+                    </summary>
+
+                    <form method="POST"
+                        action="{% url 'changeDeliveryPhone' order.order_id|default:order %}">
+                        {% csrf_token %}
+
+                        <input
+                            type="tel"
+                            name="phone"
+                            value="{{ phone }}"
+                            placeholder="Enter 10-15 digit phone number"
+                            pattern="^\+?[0-9]{10,15}$"
+                            maxlength="16"
+                            required
+                        >
+
+                        <button type="submit" class="save-address-btn">
+                            Save Phone Number
+                        </button>
+                    </form>
+                </details>
+            {% endif %}
+        </div>
+                
+        <div class="delivery-card">
+            <div class="delivery-card-header">
                 <div>
                     <h3>Delivery Address</h3>
                     <p>Your order will be delivered to this address.</p>
